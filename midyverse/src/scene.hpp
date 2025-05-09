@@ -1,3 +1,6 @@
+#ifndef SCENE_H
+#define SCENE_H
+
 #include "libs.hpp"  
 
 #define TEXTURE_LOAD 0
@@ -8,6 +11,7 @@
 #define SCENE_LOADED 1
 #define SCENE_FREE 2
 
+// struct for all the info need for a texture
 struct TextureData  
 {  
 	SDL_Texture* texture;
@@ -27,25 +31,24 @@ public:
    int GetTextureProgress();
    void SetTextureProgress(int progress);
 
+   // this is to know if current scene should have the piano rendered by engine or not
+   // doing this to avoid to load and deload piano multiple times
    bool isPiano();
    void SetPiano(bool progress);
 
+   std::vector<TextureData> GetTextures(); 
+   void SetTextures(std::vector<TextureData> textures);
 
-   std::vector<TextureData> GetTextures(); // Returns the list of textures to load.
-   void SetTextures(std::vector<TextureData> textures); // Sets the list of textures to load.
-
-   // This function loads the media needed to run this scene.  
-   bool LoadMedia(std::vector<TextureData> loadTextures);
-
-   // This function frees the scene textures.  
-   bool FreeMedia();  
+   bool FreeTextures();  
 
 private:  
-	bool isPianoOn; // Flag to check if the piano is on or off.
+	bool isPianoOn;
 
-	std::vector<TextureData> loadTextures; // List of <location, <x1, y1, w1, z1, x2, y2, w2, z2>>  
-	std::vector<std::string> freeTextures; // List of locations  
+	std::vector<TextureData> loadTextures; 
+	std::vector<std::string> freeTextures;
 
 	int textureProgress;
 	int sceneLoaded;
 };
+
+#endif

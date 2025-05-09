@@ -1,6 +1,5 @@
 #include "SDL_Engine.hpp"
 
-
 SDL::SDL() {
     window = NULL;
     renderer = NULL;
@@ -11,9 +10,11 @@ SDL::SDL() {
     screen_change = false;
     isRunning = false;
 
+    scene = 1;
     scene1 = NULL;
 }
 
+// STILL NEED TO FREE THE TEXTURES
 SDL::~SDL() { SDL_Quit(); }
 
 SDL_Renderer* SDL::GetRenderer() { return renderer; }
@@ -31,6 +32,10 @@ void SDL::SetFullscreen(int fullscreen) { this->fullscreen = fullscreen; screen_
 void SDL::SetWidth(int width) { this->width = width; screen_change = true; }
 void SDL::SetHeight(int height) { this->height = height; screen_change = true; }
 
+void SDL::SetScene(int scene) { this->scene = scene; }
+int SDL::GetScene() { return this->scene; }
+
+// Sets the variables before starting the SDL engine to then start with the other function
 bool SDL::Init(std::string title, int width, int height, int fullscreen)
 {
     SetName(title);  /* set the name of the program. */
@@ -41,16 +46,14 @@ bool SDL::Init(std::string title, int width, int height, int fullscreen)
     return Init();  /* call the other Init() function. */
 }
 
+// This function initializes SDL and creates a window and renderer.
 bool SDL::Init()
 {
     SDL_SetAppMetadata(StrToPtr(GetName()), "0.01", "com.midyverse.main");
     
     CHECK_RESULT(SDL_Init(SDL_INIT_VIDEO), "Couldn't initialize SDL: ");
 
-    if (!SDL_CreateWindowAndRenderer(StrToPtr(GetName()), GetWidth(), GetHeight(), GetFullscreen(), &this->window, &this->renderer)) {
-        SDL_Log("Couldn't create window/renderer: %s", SDL_GetError());
-        return false;
-    }
+	CHECK_RESULT(SDL_CreateWindowAndRenderer(StrToPtr(GetName()), GetWidth(), GetHeight(), GetFullscreen(), &this->window, &this->renderer), "Couldn't create window/renderer:");
 
     // icon of the program - only is runned once and then freed
     SDL_Surface* icon_surface = IMG_Load(CAT(ASSETS_IMAGES_PATH,"logo.jpg"));
@@ -62,13 +65,15 @@ bool SDL::Init()
     return true;
 }
 
+// This function is called once per frame to render the frame.
 bool SDL::RenderFrame()
-{
+{ 
     SDL_RenderPresent(GetRenderer());
 
     return true;
 }
 
+// This function is called to clear the frame.
 bool SDL::ClearFrame()
 {
     SDL_RenderClear(GetRenderer());
@@ -76,18 +81,20 @@ bool SDL::ClearFrame()
     return true;
 }
 
+// This function updates the screen if resolution changed by user input.
 bool SDL::UpdateScreen() {
 
     if (screen_change) {
         SDL_SetWindowSize(this->window, GetWidth(), GetHeight());
         SDL_SetWindowFullscreen(this->window, GetFullscreen());
-        screen_change = false;
+        this->screen_change = false;
     }
 
     return true;
 
 }
 
+// This function handles the events of the game.
 void SDL::GameEvents() {
     SDL_Event event; // Declare a local SDL_Event variable  
     while (SDL_PollEvent(&event)) { // Pass the address of the local event variable  
@@ -110,13 +117,15 @@ void SDL::GameEvents() {
     }
 }
 
+// This function renders the texture to the screen with NULL.
 bool SDL::RenderTexture(SDL_Texture* texture) {
 
-    SDL_RenderTexture(this->renderer, texture, NULL, NULL);  /* render the texture. */
+    CHECK_RESULT(SDL_RenderTexture(this->renderer, texture, NULL, NULL), "Error rendering texture f1: ");  /* render the texture. */
 
     return true;
 }
 
+// This function renders the texture to the screen.
 bool SDL::RenderTexture(SDL_Texture* texture, float x1, float y1, float w1, float h1,
     float x2, float y2, float w2, float h2) {
 
@@ -136,15 +145,17 @@ bool SDL::RenderTexture(SDL_Texture* texture, float x1, float y1, float w1, floa
     rect2->w = w2;
     rect2->h = h2;
 
-    SDL_RenderTexture(this->renderer, texture, rect1, rect2);  /* render the texture. */
+    CHECK_RESULT(SDL_RenderTexture(this->renderer, texture, rect1, rect2), "Error rendering texture f2: ");  /* render the texture. */
 
     return true;
 }
 
+// This function loads the texture from the given location.
 SDL_Texture* SDL::LoadTexture(SDL_Texture*& texture, std::string location) {
     return texture = IMG_LoadTexture(GetRenderer(), StrToPtr(location));
 }
 
+// This function frees the texture and sets it to NULL.
 void SDL::FreeTexture(SDL_Texture*& texture) {
     if (texture) {
         SDL_DestroyTexture(texture);
@@ -152,6 +163,7 @@ void SDL::FreeTexture(SDL_Texture*& texture) {
     }
 }
 
+// This function renders the scene to the screen.
 bool SDL::RenderScene(Scene* scene) {
     
 	RenderTextures(scene->GetTextures());
@@ -159,15 +171,18 @@ bool SDL::RenderScene(Scene* scene) {
     return true;
 }
 
+// This function renders all the textures of the scene to the screen.
 bool SDL::RenderTextures(std::vector<TextureData> texture_data) {
     for (TextureData& textureData : texture_data) {
         if (textureData.texture) {
-            RenderTexture(textureData.texture);
+            CHECK_RESULT(RenderTexture(textureData.texture), CAT("Error rendering texture: ", textureData.location));
         }
     }
     return true;
 }
 
+
+// This function starts the scene and loads all the media needed.
 // Expand this function if added surfaces and etc
 bool SDL::StartScene(Scene* scene) {
     
@@ -180,23 +195,26 @@ bool SDL::StartScene(Scene* scene) {
     return true;
 }
 
+// This function loads all the textures of the scene.
 bool SDL::LoadTextures(Scene* scene) {
 	std::vector<TextureData> new_textures;
+    SDL_Texture* texture = NULL;
 
     for (TextureData& textureData : scene->GetTextures()) {
-        SDL_Texture* texture = NULL;
+        
         textureData.texture = LoadTexture(texture, textureData.location);
-	    CHECK_RESULT(textureData.texture, "Error loading texture: ");
+        CHECK_RESULT(textureData.texture, CAT("Error loading texture: ", textureData.location));
 
 		new_textures.push_back(textureData);
 
-        std::cout << std::endl;
+        texture = NULL;
     }  
 
 	scene->SetTextures(new_textures);
     return true;  
 }
 
+// This function is the first scene presented to the user.
 bool SDL::Scene1() {
 
     if (this->scene1 == NULL) {

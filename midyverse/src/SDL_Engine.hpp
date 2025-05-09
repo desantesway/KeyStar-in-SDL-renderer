@@ -24,44 +24,40 @@ public:
     void SetFullscreen(int fullscreen);
     void SetWidth(int width);
     void SetHeight(int height);
+
+    void SetScene(int scene);
+    int GetScene();
     
     void FreeTexture(SDL_Texture*& texture);
 
     // This function sets the texture to the given location.
     SDL_Texture* LoadTexture(SDL_Texture*& texture, std::string location);
 
-    // This function initializes SDL and creates a window and renderer.
+    // This functions initializes SDL and creates a window and renderer.
     bool Init(std::string title, int width, int height, int fullscreen);
     bool Init();
 
-    // This function is called once per frame to render the frame.
     bool RenderFrame();
 
-    // This function is called to clear the frame.
     bool ClearFrame();
 
-    // This function renders the texture to the screen.
-    bool RenderTexture(SDL_Texture* texture);
-
-    // This function renders the texture to the screen.
-    bool RenderTexture(SDL_Texture* texture, float x1, float y1, float w1, float h1,
-        float x2, float y2, float w2, float h2);
-
-    // This function updates the screen if resolution changed by user input.
     bool UpdateScreen();
 
     void GameEvents();
 
+    bool RenderTexture(SDL_Texture* texture);
 
-    // HANDLE ERRORS
+    bool RenderTexture(SDL_Texture* texture, float x1, float y1, float w1, float h1,
+        float x2, float y2, float w2, float h2);
+
     bool LoadTextures(Scene* scene);
     bool StartScene(Scene* scene);
 
     bool RenderScene(Scene* scene);
     bool RenderTextures(std::vector<TextureData> texture_data);
 
+	// Use only for the initialization of the program
     bool Scene1();
-    
 
 private:
 
@@ -73,10 +69,10 @@ private:
     int height;
     int fullscreen;
     bool screen_change;
-
-	Scene* scene1;
-	//std::map<std::string, SDL_Texture*> Textures; // idk yet
     
+    int scene;
+	Scene* scene1;
+   
 };
 
 #endif
