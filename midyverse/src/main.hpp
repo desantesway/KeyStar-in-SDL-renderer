@@ -2,6 +2,5 @@
 #define MAIN_H
 
 #include "SDL_Engine.hpp"
-#include "SDL_Media.hpp"
 
 #endif

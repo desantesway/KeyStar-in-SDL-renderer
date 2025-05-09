@@ -21,7 +21,7 @@
     <ClCompile Include="src\SDL_Engine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\SDL_Media.cpp">
+    <ClCompile Include="src\scene.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -29,16 +29,16 @@
     <ClInclude Include="src\SDL_Engine.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\SDL3.hpp">
+    <ClInclude Include="src\libs.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\main.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Macros.hpp">
+    <ClInclude Include="src\macros.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\SDL_Media.hpp">
+    <ClInclude Include="src\scene.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

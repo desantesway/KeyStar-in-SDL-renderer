@@ -1,6 +1,14 @@
 #ifndef MACROS_H
 #define MACROS_H
 
+#define ASSETS_IMAGES_PATH "assets/images/"
+
+#define CAT(a, b) \
+    (a + std::string(b)).c_str()
+
+// Converts a string to a char*
+#define StrToPtr(str) (str).c_str()
+
 // Check for SDL errors
 // IF INPUT TRUE -> DOESNT RAISE AN ERROR
 #define CHECK_RESULT(expr, error_msg, ...) \

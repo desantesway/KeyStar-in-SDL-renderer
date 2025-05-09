@@ -134,14 +134,14 @@
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\SDL_Engine.cpp" />
-    <ClCompile Include="src\SDL_Media.cpp" />
+    <ClCompile Include="src\scene.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\Macros.hpp" />
+    <ClInclude Include="src\macros.hpp" />
     <ClInclude Include="src\main.hpp" />
-    <ClInclude Include="src\SDL3.hpp" />
+    <ClInclude Include="src\libs.hpp" />
     <ClInclude Include="src\SDL_Engine.hpp" />
-    <ClInclude Include="src\SDL_Media.hpp" />
+    <ClInclude Include="src\scene.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="SDL3.dll" />

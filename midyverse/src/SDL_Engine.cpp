@@ -1,5 +1,6 @@
 #include "SDL_Engine.hpp"
 
+
 SDL::SDL() {
     window = NULL;
     renderer = NULL;
@@ -7,10 +8,10 @@ SDL::SDL() {
     width = 1280;
     height = 720;
     fullscreen = 0;
-    background = NULL;
     screen_change = false;
     isRunning = false;
-    images_location = "assets/images/";
+
+    scene1 = NULL;
 }
 
 SDL::~SDL() { SDL_Quit(); }
@@ -21,8 +22,8 @@ SDL_Window* SDL::GetWindow() { return window; }
 bool SDL::SetRunning(bool isRunning) { this->isRunning = isRunning; return isRunning; }
 bool SDL::IsRunning() { return isRunning; }
 
-const char* SDL::GetName() { return name; }
-void SDL::SetName(const char* string) { this->name = string; }
+std::string SDL::GetName() { return name; }
+void SDL::SetName(std::string string) { this->name = string; }
 int SDL::GetWidth() { return width; }
 int SDL::GetHeight() { return height; }
 int SDL::GetFullscreen() { return fullscreen; }
@@ -30,7 +31,7 @@ void SDL::SetFullscreen(int fullscreen) { this->fullscreen = fullscreen; screen_
 void SDL::SetWidth(int width) { this->width = width; screen_change = true; }
 void SDL::SetHeight(int height) { this->height = height; screen_change = true; }
 
-bool SDL::Init(const char* title, int width, int height, int fullscreen)
+bool SDL::Init(std::string title, int width, int height, int fullscreen)
 {
     SetName(title);  /* set the name of the program. */
     SetFullscreen(fullscreen);  /* set the fullscreen flag. */
@@ -42,17 +43,17 @@ bool SDL::Init(const char* title, int width, int height, int fullscreen)
 
 bool SDL::Init()
 {
-    SDL_SetAppMetadata(GetName(), "0.01", "com.midyverse.main");
-
+    SDL_SetAppMetadata(StrToPtr(GetName()), "0.01", "com.midyverse.main");
+    
     CHECK_RESULT(SDL_Init(SDL_INIT_VIDEO), "Couldn't initialize SDL: ");
 
-    if (!SDL_CreateWindowAndRenderer(GetName(), GetWidth(), GetHeight(), GetFullscreen(), &this->window, &this->renderer)) {
+    if (!SDL_CreateWindowAndRenderer(StrToPtr(GetName()), GetWidth(), GetHeight(), GetFullscreen(), &this->window, &this->renderer)) {
         SDL_Log("Couldn't create window/renderer: %s", SDL_GetError());
         return false;
     }
 
     // icon of the program - only is runned once and then freed
-    SDL_Surface* icon_surface = IMG_Load((this->images_location + std::string("logo.jpg")).c_str());
+    SDL_Surface* icon_surface = IMG_Load(CAT(ASSETS_IMAGES_PATH,"logo.jpg"));
     CHECK_RESULT(icon_surface, "Couldn't load icon surface: ");
     CHECK_RESULT(SDL_SetWindowIcon(GetWindow(), icon_surface), "Couldn't set window icon: ", SDL_DestroySurface(icon_surface));
 
@@ -71,13 +72,6 @@ bool SDL::RenderFrame()
 bool SDL::ClearFrame()
 {
     SDL_RenderClear(GetRenderer());
-
-    return true;
-}
-
-bool SDL::RenderInit() {
-
-    RenderTexture(GetBackground());
 
     return true;
 }
@@ -114,4 +108,115 @@ void SDL::GameEvents() {
             break;
         }
     }
+}
+
+bool SDL::RenderTexture(SDL_Texture* texture) {
+
+    SDL_RenderTexture(this->renderer, texture, NULL, NULL);  /* render the texture. */
+
+    return true;
+}
+
+bool SDL::RenderTexture(SDL_Texture* texture, float x1, float y1, float w1, float h1,
+    float x2, float y2, float w2, float h2) {
+
+    if ((x1 == y1 == w1 == h1 == 0) && (x2 == y2 == w2 == h2 == 0)){
+		RenderTexture(texture);
+    }
+
+    SDL_FRect* rect1 = new SDL_FRect();
+    rect1->x = x1;
+    rect1->y = y1;
+    rect1->w = w1;
+    rect1->h = h1;
+
+    SDL_FRect* rect2 = new SDL_FRect();
+    rect2->x = x2;
+    rect2->y = y2;
+    rect2->w = w2;
+    rect2->h = h2;
+
+    SDL_RenderTexture(this->renderer, texture, rect1, rect2);  /* render the texture. */
+
+    return true;
+}
+
+SDL_Texture* SDL::LoadTexture(SDL_Texture*& texture, std::string location) {
+    return texture = IMG_LoadTexture(GetRenderer(), StrToPtr(location));
+}
+
+void SDL::FreeTexture(SDL_Texture*& texture) {
+    if (texture) {
+        SDL_DestroyTexture(texture);
+        texture = NULL;
+    }
+}
+
+bool SDL::RenderScene(Scene* scene) {
+    
+	RenderTextures(scene->GetTextures());
+
+    return true;
+}
+
+bool SDL::RenderTextures(std::vector<TextureData> texture_data) {
+    for (TextureData& textureData : texture_data) {
+        if (textureData.texture) {
+            RenderTexture(textureData.texture);
+        }
+    }
+    return true;
+}
+
+// Expand this function if added surfaces and etc
+bool SDL::StartScene(Scene* scene) {
+    
+    
+    if (this->scene1->GetTextureProgress() == TEXTURE_LOAD) {
+        LoadTextures(scene);
+        this->scene1->SetTextureProgress(TEXTURE_LOADED);
+    }
+    
+    return true;
+}
+
+bool SDL::LoadTextures(Scene* scene) {
+	std::vector<TextureData> new_textures;
+
+    for (TextureData& textureData : scene->GetTextures()) {
+        SDL_Texture* texture = NULL;
+        textureData.texture = LoadTexture(texture, textureData.location);
+	    CHECK_RESULT(textureData.texture, "Error loading texture: ");
+
+		new_textures.push_back(textureData);
+
+        std::cout << std::endl;
+    }  
+
+	scene->SetTextures(new_textures);
+    return true;  
+}
+
+bool SDL::Scene1() {
+
+    if (this->scene1 == NULL) {
+        this->scene1 = new Scene();
+    }
+
+    if (this->scene1->GetSceneProgress() == SCENE_LOAD) {
+
+        std::vector<TextureData> Textures;
+        Textures.push_back({ NULL, CAT(ASSETS_IMAGES_PATH, "background.jpg"), {0, 0, 0, 0, 0, 0, 0, 0} });
+
+        scene1->SetTextures(Textures);
+        
+        StartScene(scene1);
+    
+        this->scene1->SetSceneProgress(SCENE_LOADED);
+    }
+    if (this->scene1->GetTextureProgress() == SCENE_LOADED) {
+        this->RenderScene(scene1);
+    }
+
+    return true;
 }
