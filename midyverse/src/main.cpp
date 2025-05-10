@@ -39,11 +39,15 @@ void SDL_Free(SDL* sdl) {
 // This function is called once per frame to render the frame.
 void SDL_Run(SDL* sdl) {
     while (sdl->IsRunning()) {
+		float startTime = SDL_GetTicks();  // Get the start time of the frame
+
 		sdl->GameEvents();  // Call the game events function
 
         sdl->ClearFrame();
 
         sdl->UpdateScreen();
+
+		sdl->FPS();
 
         if (sdl->GetScene() == 1) {
             sdl->Scene1(); // Start the scene
@@ -51,6 +55,12 @@ void SDL_Run(SDL* sdl) {
         //sdl->RenderInit();
 
         sdl->RenderFrame();
+
+        float FTime = SDL_GetTicks() - startTime; 
+
+		if (1000.0f / sdl->GetMaxFPS() > FTime) {
+			SDL_Delay((1000.0f / sdl->GetMaxFPS()) - FTime);  // Delay to maintain the desired frame rate
+		}
     }
     //VOID_CHECK_RESULT(!sdl->FreeAllMedia(), "Error freeing media:");
 }

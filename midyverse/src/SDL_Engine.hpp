@@ -25,6 +25,9 @@ public:
     void SetWidth(int width);
     void SetHeight(int height);
 
+    float GetFPS();
+    float GetMaxFPS();
+
     void SetScene(int scene);
     int GetScene();
     
@@ -44,6 +47,9 @@ public:
     bool UpdateScreen();
 
     void GameEvents();
+
+	void CalculateFPS();
+	void FPS();
 
     bool RenderTexture(SDL_Texture* texture);
 
@@ -69,6 +75,9 @@ private:
     int height;
     int fullscreen;
     bool screen_change;
+
+    float fps;
+    float maxfps;
     
     int scene;
 	Scene* scene1;

@@ -9,6 +9,7 @@ SDL::SDL() {
     fullscreen = 0;
     screen_change = false;
     isRunning = false;
+    maxfps = 120.0f;
 
     scene = 1;
     scene1 = NULL;
@@ -115,6 +116,58 @@ void SDL::GameEvents() {
             break;
         }
     }
+}
+
+float SDL::GetFPS() { return this->fps; }
+float SDL::GetMaxFPS() { return this->maxfps; }
+
+void SDL::FPS() {
+	static int frameCount = 0;
+	frameCount++;
+
+    CalculateFPS();
+
+	if (frameCount == 100) {
+		std::cout << "FPS: " << GetFPS() << std::endl;
+        frameCount = 0;
+	}
+}
+
+// This function calculates the FPS of the program.
+void SDL::CalculateFPS() {
+    static const int NUM_SAMPLES = 100;
+    static float fps_samples[NUM_SAMPLES];
+    static int currentFrame = 0;
+
+	static float prevTick = SDL_GetTicks();
+    float currentTick;
+    currentTick = SDL_GetTicks();
+
+    float frameTime = currentTick - prevTick;
+
+    if (currentFrame >= NUM_SAMPLES) {
+        currentFrame = 0;   
+    }
+    fps_samples[currentFrame] = frameTime;
+	
+	
+	int count = std::min(currentFrame, NUM_SAMPLES);
+
+    float frameAverage = 0;
+    for (int i = 0; i < count; i++) {
+        frameAverage += fps_samples[i];
+    }
+    frameAverage /= count;
+
+	if (frameAverage > 0) {
+        this->fps = 1000.0f / frameAverage;
+    }
+    else {
+        this->fps = 0.0f;
+    }
+
+	prevTick = currentTick;
+    currentFrame++;
 }
 
 // This function renders the texture to the screen with NULL.
