@@ -9,6 +9,7 @@ SDL::SDL() {
     fullscreen = 0;
     screen_change = false;
     isRunning = false;
+    fps = 0.0f;
     maxfps = 120.0f;
 
     scene = 1;
@@ -16,7 +17,22 @@ SDL::SDL() {
 }
 
 // STILL NEED TO FREE THE TEXTURES
-SDL::~SDL() { SDL_Quit(); }
+SDL::~SDL() {}
+
+void SDL::FreeSDL() {
+
+    if (this->renderer) {
+        SDL_DestroyRenderer(this->renderer);
+        this->renderer = NULL;
+    }
+    if (this->window) {
+        SDL_DestroyWindow(this->window);
+        this->window = NULL;
+    }
+
+    TTF_Quit();
+    SDL_Quit();
+}
 
 SDL_Renderer* SDL::GetRenderer() { return renderer; }
 SDL_Window* SDL::GetWindow() { return window; }
@@ -53,6 +69,8 @@ bool SDL::Init()
     SDL_SetAppMetadata(StrToPtr(GetName()), "0.01", "com.midyverse.main");
     
     CHECK_RESULT(SDL_Init(SDL_INIT_VIDEO), "Couldn't initialize SDL: ");
+
+    CHECK_RESULT(TTF_Init(), "Couldn't initialize SDL TTF: ");
 
 	CHECK_RESULT(SDL_CreateWindowAndRenderer(StrToPtr(GetName()), GetWidth(), GetHeight(), GetFullscreen(), &this->window, &this->renderer), "Couldn't create window/renderer:");
 
@@ -233,7 +251,6 @@ bool SDL::RenderTextures(std::vector<TextureData> texture_data) {
     }
     return true;
 }
-
 
 // This function starts the scene and loads all the media needed.
 // Expand this function if added surfaces and etc

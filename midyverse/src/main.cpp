@@ -2,10 +2,10 @@
 * PRIORITY IN TEXTURE RENDERING - MIGHT NOT NEED, JUST IMPORT ON THE VECTOR BY CORRECT ORDER
 * 3. FREE THE MEDIA 
 * 2. CREATE CLASS FOR KEYBOARD
-* * FPS COUNTER
 * 3. CREATE CLASS FOR MIDI -> DETECT KEYS
 * 4. CREATE CLASS FOR PIANO -> OCATVE (KEYS) + PEDAL
 * 5. RENDER PIANO
+* HANDLE MOVING WINDOW
 * 6. MAKE PIANO ANIMATIONS WITH KEYS
 * 7. DO ABOVE FOR MOUSE
 * 8. CHORD RECOGNITION
@@ -62,6 +62,10 @@ void SDL_Run(SDL* sdl) {
 			SDL_Delay((1000.0f / sdl->GetMaxFPS()) - FTime);  // Delay to maintain the desired frame rate
 		}
     }
+
+    sdl->FreeSDL();
+	//SDL_Free(sdl);
+
     //VOID_CHECK_RESULT(!sdl->FreeAllMedia(), "Error freeing media:");
 }
 

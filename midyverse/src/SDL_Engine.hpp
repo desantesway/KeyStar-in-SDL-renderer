@@ -10,6 +10,7 @@ public:
 
     SDL();
     ~SDL();
+    void FreeSDL();
 
     SDL_Renderer* GetRenderer();
     SDL_Window* GetWindow();
