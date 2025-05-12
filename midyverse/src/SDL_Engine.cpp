@@ -9,14 +9,28 @@ SDL::SDL() {
     fullscreen = 0;
     screen_change = false;
     isRunning = false;
-    fps = 0.0f;
+    fps = -1.0f;
     maxfps = 120.0f;
+	mainFont = NULL;
+	FpsTexture = NULL;
 
     scene = 1;
     scene1 = NULL;
 }
 
 SDL::~SDL() {
+
+    if (this->mainFont) {
+        TTF_CloseFont(this->mainFont);
+        this->mainFont = NULL;
+    }
+    if (this->FpsTexture) {
+        SDL_DestroyTexture(this->FpsTexture);
+        this->FpsTexture = NULL;
+    }
+
+	this->SetScene(-1);
+    this->Scenes();
 
     if (this->renderer) {
         SDL_DestroyRenderer(this->renderer);
@@ -72,11 +86,15 @@ bool SDL::Init()
 	CHECK_RESULT(SDL_CreateWindowAndRenderer(StrToPtr(GetName()), GetWidth(), GetHeight(), GetFullscreen(), &this->window, &this->renderer), "Couldn't create window/renderer:");
 
     // icon of the program - only is runned once and then freed
-    SDL_Surface* icon_surface = IMG_Load(CAT(ASSETS_IMAGES_PATH,"logo.jpg"));
+    SDL_Surface* icon_surface = IMG_Load(CAT(ASSETS_IMAGES_PATH,ICON_PATH));
     CHECK_RESULT(icon_surface, "Couldn't load icon surface: ");
     CHECK_RESULT(SDL_SetWindowIcon(GetWindow(), icon_surface), "Couldn't set window icon: ", SDL_DestroySurface(icon_surface));
 
     SDL_DestroySurface(icon_surface);
+
+    // main font
+	this->mainFont = TTF_OpenFont(CAT(FONT_PATH, MAIN_FONT_PATH), MAIN_FONT_SIZE);
+	CHECK_RESULT(this->mainFont, "Couldn't load font: ", SDL_GetError());
 
     return true;
 }
@@ -124,11 +142,10 @@ void SDL::GameEvents() {
                 SetRunning(false);
                 break;
             case SDL_SCANCODE_SPACE:
-				DestroyScene(this->scene1);
-				SetScene(2);
+                SetFPS(0);
                 break;
             case SDL_SCANCODE_L:
-                SetScene(1);
+                SetFPS(-1);
                 break;
             default:
                 break;
@@ -140,19 +157,57 @@ void SDL::GameEvents() {
     }
 }
 
+void SDL::SetFPS(float fps) { this->fps = fps; }
 float SDL::GetFPS() { return this->fps; }
 float SDL::GetMaxFPS() { return this->maxfps; }
 
+// This function sets, show and calculates the FPS of the program.
 void SDL::FPS() {
-	static int frameCount = 0;
-	frameCount++;
+    if (GetFPS()!= -1) {
+        static int frameCount = 0;
+        frameCount++;
 
-    CalculateFPS();
+        CalculateFPS();
 
-	if (frameCount == 100) {
-		std::cout << "FPS: " << GetFPS() << std::endl;
-        frameCount = 0;
+        static SDL_FRect fps_rect;
+
+        if (frameCount == 100) {
+
+            if (this->FpsTexture) {
+                SDL_DestroyTexture(this->FpsTexture);
+                this->FpsTexture = NULL;
+            }
+
+            SDL_Color color = { 255, 255, 255, 255 };
+            SDL_Surface* fps_surface = TTF_RenderText_Blended(this->mainFont, CAT("FPS: ", std::to_string((int)this->GetFPS())), 0, color);
+            VOID_CHECK_RESULT(fps_surface, "Error rendering FPS surface: ", SDL_GetError());
+
+            if (fps_surface) {
+                fps_rect.x = 5.0f;
+                fps_rect.w = (float)fps_surface->w;
+                fps_rect.h = (float)fps_surface->h;
+            }
+            this->FpsTexture = SDL_CreateTextureFromSurface(this->renderer, fps_surface);
+
+            SDL_DestroySurface(fps_surface);
+            fps_surface = NULL;
+
+            VOID_CHECK_RESULT(this->FpsTexture, "Error rendering FPS texture: ", SDL_GetError());
+            //VOID_CHECK_RESULT(SDL_SetTextureScaleMode(this->FpsTexture, SDL_SCALEMODE_NEAREST), "Error setting FPS texture scale mode: ", SDL_GetError());
+
+            frameCount = 0;
+        }
+
+        if (this->FpsTexture) {
+            SDL_RenderTexture(this->renderer, this->FpsTexture, NULL, &fps_rect); // Render the FPS texture
+        }
 	}
+    else {
+        if (this->FpsTexture) {
+            SDL_DestroyTexture(this->FpsTexture);
+            this->FpsTexture = NULL;
+        }
+    }
 }
 
 // This function calculates the FPS of the program.
@@ -161,9 +216,9 @@ void SDL::CalculateFPS() {
     static float fps_samples[NUM_SAMPLES];
     static int currentFrame = 0;
 
-	static float prevTick = SDL_GetTicks();
+	static float prevTick = (float)SDL_GetTicks();
     float currentTick;
-    currentTick = SDL_GetTicks();
+    currentTick = (float)SDL_GetTicks();
 
     float frameTime = currentTick - prevTick;
 
@@ -204,8 +259,8 @@ bool SDL::RenderTexture(SDL_Texture* texture) {
 bool SDL::RenderTexture(SDL_Texture* texture, float x1, float y1, float w1, float h1,
     float x2, float y2, float w2, float h2) {
 
-    if ((x1 == y1 == w1 == h1 == 0) && (x2 == y2 == w2 == h2 == 0)){
-		RenderTexture(texture);
+    if ((x1 == 0 && y1 == 0 && w1 == 0 && h1 == 0) && (x2 == 0 && y2 == 0 && w2 == 0 && h2 == 0)) {
+        RenderTexture(texture);
     }
 
     SDL_FRect* rect1 = new SDL_FRect();
@@ -249,6 +304,10 @@ void SDL::DestroyScene(Scene* scene) {
 void SDL::Scenes() {
 
     switch (this->GetScene()) {
+    case -1:
+		if (this->scene1) {
+			DestroyScene(this->scene1);
+		}
 	case 1:
         this->Scene1();
     }
@@ -314,7 +373,7 @@ bool SDL::Scene1() {
     if (!this->scene1->IsSceneLoaded()) {
 
         std::vector<TextureData> Textures;
-        Textures.push_back({ NULL, CAT(ASSETS_IMAGES_PATH, "background.jpg"), {0, 0, 0, 0, 0, 0, 0, 0} });
+        Textures.push_back({ NULL, CAT(ASSETS_IMAGES_PATH, SCENE1_BACKGROUND), {0, 0, 0, 0, 0, 0, 0, 0} });
 
         scene1->SetTextures(Textures);
         

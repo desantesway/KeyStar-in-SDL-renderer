@@ -1,6 +1,7 @@
 /* TODOS:
 * PRIORITY IN TEXTURE RENDERING - MIGHT NOT NEED, JUST IMPORT ON THE VECTOR BY CORRECT ORDER
 * 3. RENDER FPS INGAME
+* FREE ALL POINTERS!!!!!
 * 2. CREATE CLASS FOR KEYBOARD
 * 3. CREATE CLASS FOR MIDI -> DETECT KEYS
 * 4. CREATE CLASS FOR PIANO -> OCATVE (KEYS) + PEDAL
@@ -39,7 +40,7 @@ void SDL_Free(SDL* sdl) {
 // This function is called once per frame to render the frame.
 void SDL_Run(SDL* sdl) {
     while (sdl->IsRunning()) {
-		float startTime = SDL_GetTicks();  // Get the start time of the frame
+		float startTime = (float)SDL_GetTicks();  // Get the start time of the frame
 
 		sdl->GameEvents();  // Call the game events function
 
@@ -47,9 +48,9 @@ void SDL_Run(SDL* sdl) {
 
         sdl->UpdateScreen();
 
-		sdl->FPS();
-
         sdl->Scenes();
+
+        sdl->FPS();
 
         sdl->RenderFrame();
 

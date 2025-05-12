@@ -26,6 +26,7 @@ public:
     void SetHeight(int height);
 
     float GetFPS();
+    void SetFPS(float fps);
     float GetMaxFPS();
 
     void SetScene(int scene);
@@ -78,8 +79,11 @@ private:
     int fullscreen;
     bool screen_change;
 
-    float fps;
+    float fps; // set to -1 to dehactivate ingame fps
     float maxfps;
+    SDL_Texture* FpsTexture;
+
+    TTF_Font* mainFont;
     
     int scene;
 	Scene* scene1;
