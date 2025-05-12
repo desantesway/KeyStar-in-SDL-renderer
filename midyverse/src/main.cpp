@@ -1,6 +1,6 @@
 /* TODOS:
 * PRIORITY IN TEXTURE RENDERING - MIGHT NOT NEED, JUST IMPORT ON THE VECTOR BY CORRECT ORDER
-* 3. FREE THE MEDIA 
+* 3. RENDER FPS INGAME
 * 2. CREATE CLASS FOR KEYBOARD
 * 3. CREATE CLASS FOR MIDI -> DETECT KEYS
 * 4. CREATE CLASS FOR PIANO -> OCATVE (KEYS) + PEDAL
@@ -49,10 +49,7 @@ void SDL_Run(SDL* sdl) {
 
 		sdl->FPS();
 
-        if (sdl->GetScene() == 1) {
-            sdl->Scene1(); // Start the scene
-        }
-        //sdl->RenderInit();
+        sdl->Scenes();
 
         sdl->RenderFrame();
 
@@ -63,10 +60,7 @@ void SDL_Run(SDL* sdl) {
 		}
     }
 
-    sdl->FreeSDL();
-	//SDL_Free(sdl);
-
-    //VOID_CHECK_RESULT(!sdl->FreeAllMedia(), "Error freeing media:");
+    sdl->~SDL();
 }
 
 int main(int argc, char* args[]) {

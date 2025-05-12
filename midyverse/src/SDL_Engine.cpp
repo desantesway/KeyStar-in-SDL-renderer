@@ -16,10 +16,7 @@ SDL::SDL() {
     scene1 = NULL;
 }
 
-// STILL NEED TO FREE THE TEXTURES
-SDL::~SDL() {}
-
-void SDL::FreeSDL() {
+SDL::~SDL() {
 
     if (this->renderer) {
         SDL_DestroyRenderer(this->renderer);
@@ -125,6 +122,13 @@ void SDL::GameEvents() {
             switch (event.key.scancode) {
             case SDL_SCANCODE_ESCAPE:
                 SetRunning(false);
+                break;
+            case SDL_SCANCODE_SPACE:
+				DestroyScene(this->scene1);
+				SetScene(2);
+                break;
+            case SDL_SCANCODE_L:
+                SetScene(1);
                 break;
             default:
                 break;
@@ -234,6 +238,22 @@ void SDL::FreeTexture(SDL_Texture*& texture) {
     }
 }
 
+// This function destroys the scene and frees memory.
+void SDL::DestroyScene(Scene* scene) {
+	if (scene) {
+        scene->~Scene();
+	}
+}
+
+// This function is called to load/render the scenes depending on the variable scene.
+void SDL::Scenes() {
+
+    switch (this->GetScene()) {
+	case 1:
+        this->Scene1();
+    }
+}
+
 // This function renders the scene to the screen.
 bool SDL::RenderScene(Scene* scene) {
     
@@ -246,7 +266,7 @@ bool SDL::RenderScene(Scene* scene) {
 bool SDL::RenderTextures(std::vector<TextureData> texture_data) {
     for (TextureData& textureData : texture_data) {
         if (textureData.texture) {
-            CHECK_RESULT(RenderTexture(textureData.texture), CAT("Error rendering texture: ", textureData.location));
+            CHECK_RESULT(RenderTexture(textureData.texture), CAT("Error rendering texture: ", textureData.location)); //IMPLEMENT FOR RENDER TEXTURE POSITION
         }
     }
     return true;
@@ -257,9 +277,9 @@ bool SDL::RenderTextures(std::vector<TextureData> texture_data) {
 bool SDL::StartScene(Scene* scene) {
     
     
-    if (this->scene1->GetTextureProgress() == TEXTURE_LOAD) {
+    if (!scene->IsTextureLoaded()) {
         LoadTextures(scene);
-        this->scene1->SetTextureProgress(TEXTURE_LOADED);
+        scene->SetTextureLoaded(true);
     }
     
     return true;
@@ -291,7 +311,7 @@ bool SDL::Scene1() {
         this->scene1 = new Scene();
     }
 
-    if (this->scene1->GetSceneProgress() == SCENE_LOAD) {
+    if (!this->scene1->IsSceneLoaded()) {
 
         std::vector<TextureData> Textures;
         Textures.push_back({ NULL, CAT(ASSETS_IMAGES_PATH, "background.jpg"), {0, 0, 0, 0, 0, 0, 0, 0} });
@@ -299,10 +319,11 @@ bool SDL::Scene1() {
         scene1->SetTextures(Textures);
         
         StartScene(scene1);
-    
-        this->scene1->SetSceneProgress(SCENE_LOADED);
+
+		this->scene1->SetPiano(true);
+        this->scene1->SetSceneLoaded(true);
     }
-    if (this->scene1->GetTextureProgress() == SCENE_LOADED) {
+    else {
         this->RenderScene(scene1);
     }
 

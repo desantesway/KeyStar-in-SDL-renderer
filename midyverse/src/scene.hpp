@@ -3,14 +3,6 @@
 
 #include "libs.hpp"  
 
-#define TEXTURE_LOAD 0
-#define TEXTURE_LOADED 1
-#define TEXTURE_FREE 2
-
-#define SCENE_LOAD 0
-#define SCENE_LOADED 1
-#define SCENE_FREE 2
-
 // struct for all the info need for a texture
 struct TextureData  
 {  
@@ -26,14 +18,14 @@ public:
    ~Scene();  
    Scene(std::vector<TextureData> loadTextures);
 
-   int GetSceneProgress();
-   void SetSceneProgress(int progress);
-   int GetTextureProgress();
-   void SetTextureProgress(int progress);
+   bool IsSceneLoaded();
+   void SetSceneLoaded(int progress);
+   bool IsTextureLoaded();
+   void SetTextureLoaded(int progress);
 
    // this is to know if current scene should have the piano rendered by engine or not
    // doing this to avoid to load and deload piano multiple times
-   bool isPiano();
+   bool IsPiano();
    void SetPiano(bool progress);
 
    std::vector<TextureData> GetTextures(); 
@@ -45,10 +37,9 @@ private:
 	bool isPianoOn;
 
 	std::vector<TextureData> loadTextures; 
-	std::vector<std::string> freeTextures;
 
-	int textureProgress;
-	int sceneLoaded;
+	bool textureLoaded;
+	bool sceneLoaded;
 };
 
 #endif

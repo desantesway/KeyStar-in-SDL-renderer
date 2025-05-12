@@ -10,7 +10,6 @@ public:
 
     SDL();
     ~SDL();
-    void FreeSDL();
 
     SDL_Renderer* GetRenderer();
     SDL_Window* GetWindow();
@@ -33,6 +32,7 @@ public:
     int GetScene();
     
     void FreeTexture(SDL_Texture*& texture);
+    void DestroyScene(Scene* scene);
 
     // This function sets the texture to the given location.
     SDL_Texture* LoadTexture(SDL_Texture*& texture, std::string location);
@@ -57,6 +57,7 @@ public:
     bool RenderTexture(SDL_Texture* texture, float x1, float y1, float w1, float h1,
         float x2, float y2, float w2, float h2);
 
+    void Scenes();
     bool LoadTextures(Scene* scene);
     bool StartScene(Scene* scene);
 
