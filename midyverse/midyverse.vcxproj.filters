@@ -24,10 +24,10 @@
     <ClCompile Include="src\scene.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\piano.hpp">
+    <ClCompile Include="src\pianokeyboard.hpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\piano.cpp">
+    <ClCompile Include="src\pianokeyboard.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -52,5 +52,6 @@
     <None Include="SDL3.dll" />
     <None Include="SDL3_image.dll" />
     <None Include="SDL3_ttf.dll" />
+    <None Include="rtmidi.dll" />
   </ItemGroup>
 </Project>

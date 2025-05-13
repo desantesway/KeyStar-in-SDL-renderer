@@ -32,7 +32,7 @@ SDL::~SDL() {
     }
 
     if (this->piano) {
-		this->piano->~Piano();
+		this->piano->~PianoKeyboard();
         delete this->piano;
         this->mainFont = NULL;
     }
@@ -325,7 +325,7 @@ void SDL::Scenes() {
     }
     if (scene->IsPiano()) {
 		if (!this->piano) {
-			this->piano = new Piano();
+			this->piano = new PianoKeyboard();
         }
         else {
         // render piano

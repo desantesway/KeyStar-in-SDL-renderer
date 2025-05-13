@@ -1,12 +1,16 @@
 #ifndef PIANO_H
 #define PIANO_H
 
-class Piano
+#include <iostream>
+#include <cstdlib>
+#include "RtMidi.h"
+
+class PianoKeyboard
 {
 public:
 
-	Piano();
-	~Piano();
+	PianoKeyboard();
+	~PianoKeyboard();
 	void SetOctave(int octave);
 	int GetOctave();
 	void SetKey(int key);
@@ -19,6 +23,9 @@ private:
 	int octave;
 	int key;
 	float pedal;
+
+	RtMidiIn* midiin;
+	RtMidiOut* midiout;
 
 	// var for events
 };

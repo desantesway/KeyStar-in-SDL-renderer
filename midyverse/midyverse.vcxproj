@@ -104,13 +104,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Tools\SDL3\SDL3_image\include;C:\Tools\SDL3\SDL3\include;C:\Tools\SDL3\SDL3_ttf-3.1.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Tools\rtmidi;C:\Tools\SDL3\SDL3_image\include;C:\Tools\SDL3\SDL3\include;C:\Tools\SDL3\SDL3_ttf-3.1.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Tools\SDL3\SDL3_image\lib\x64;C:\Tools\SDL3\SDL3\lib\x64;C:\Tools\SDL3\SDL3_ttf-3.1.0\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL3.lib;SDL3_image.lib;SDL3_ttf.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Tools\rtmidi\Debug;C:\Tools\SDL3\SDL3_image\lib\x64;C:\Tools\SDL3\SDL3\lib\x64;C:\Tools\SDL3\SDL3_ttf-3.1.0\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL3.lib;SDL3_image.lib;SDL3_ttf.lib;rtmidi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <EntryPointSymbol>
       </EntryPointSymbol>
     </Link>
@@ -132,8 +132,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\piano.cpp" />
-    <ClCompile Include="src\piano.hpp" />
+    <ClCompile Include="src\pianokeyboard.cpp" />
+    <ClCompile Include="src\pianokeyboard.hpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\SDL_Engine.cpp" />
     <ClCompile Include="src\scene.cpp" />
@@ -146,6 +146,7 @@
     <ClInclude Include="src\scene.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="rtmidi.dll" />
     <None Include="SDL3.dll" />
     <None Include="SDL3_image.dll" />
     <None Include="SDL3_ttf.dll" />

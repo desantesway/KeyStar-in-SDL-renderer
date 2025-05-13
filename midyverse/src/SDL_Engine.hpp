@@ -3,7 +3,7 @@
 
 #include "main.hpp"
 #include "scene.hpp"
-#include "piano.hpp"
+#include "pianokeyboard.hpp"
 
 class SDL
 {
@@ -86,7 +86,7 @@ private:
 
     TTF_Font* mainFont;
 
-	Piano* piano;
+	PianoKeyboard* piano;
     
     int scene;
 	Scene* scene1;
