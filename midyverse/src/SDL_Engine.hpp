@@ -3,6 +3,7 @@
 
 #include "main.hpp"
 #include "scene.hpp"
+#include "piano.hpp"
 
 class SDL
 {
@@ -84,6 +85,8 @@ private:
     SDL_Texture* FpsTexture;
 
     TTF_Font* mainFont;
+
+	Piano* piano;
     
     int scene;
 	Scene* scene1;

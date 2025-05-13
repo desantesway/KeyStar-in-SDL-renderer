@@ -14,6 +14,8 @@ SDL::SDL() {
 	mainFont = NULL;
 	FpsTexture = NULL;
 
+	piano = NULL;
+
     scene = 1;
     scene1 = NULL;
 }
@@ -27,6 +29,12 @@ SDL::~SDL() {
     if (this->FpsTexture) {
         SDL_DestroyTexture(this->FpsTexture);
         this->FpsTexture = NULL;
+    }
+
+    if (this->piano) {
+		this->piano->~Piano();
+        delete this->piano;
+        this->mainFont = NULL;
     }
 
 	this->SetScene(-1);
@@ -130,13 +138,13 @@ bool SDL::UpdateScreen() {
 
 // This function handles the events of the game.
 void SDL::GameEvents() {
-    SDL_Event event; // Declare a local SDL_Event variable  
-    while (SDL_PollEvent(&event)) { // Pass the address of the local event variable  
-        switch (event.type) { // Use the local event variable  
+    static SDL_Event event;   
+    while (SDL_PollEvent(&event)) {
+        switch (event.type) { 
         case SDL_EVENT_QUIT:
             SetRunning(false);
             break;
-        case SDL_EVENT_KEY_DOWN:
+        case SDL_EVENT_KEY_DOWN: // keyboard
             switch (event.key.scancode) {
             case SDL_SCANCODE_ESCAPE:
                 SetRunning(false);
@@ -297,11 +305,14 @@ void SDL::FreeTexture(SDL_Texture*& texture) {
 void SDL::DestroyScene(Scene* scene) {
 	if (scene) {
         scene->~Scene();
+        scene = NULL;
 	}
 }
 
 // This function is called to load/render the scenes depending on the variable scene.
 void SDL::Scenes() {
+
+	static Scene* scene = NULL;
 
     switch (this->GetScene()) {
     case -1:
@@ -310,7 +321,16 @@ void SDL::Scenes() {
 		}
 	case 1:
         this->Scene1();
+		scene = this->scene1;
     }
+    if (scene->IsPiano()) {
+		if (!this->piano) {
+			this->piano = new Piano();
+        }
+        else {
+        // render piano
+        }
+	}
 }
 
 // This function renders the scene to the screen.
@@ -373,7 +393,7 @@ bool SDL::Scene1() {
     if (!this->scene1->IsSceneLoaded()) {
 
         std::vector<TextureData> Textures;
-        Textures.push_back({ NULL, CAT(ASSETS_IMAGES_PATH, SCENE1_BACKGROUND), {0, 0, 0, 0, 0, 0, 0, 0} });
+        //Textures.push_back({ NULL, CAT(ASSETS_IMAGES_PATH, SCENE1_BACKGROUND), {0, 0, 0, 0, 0, 0, 0, 0} });
 
         scene1->SetTextures(Textures);
         

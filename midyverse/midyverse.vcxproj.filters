@@ -24,6 +24,12 @@
     <ClCompile Include="src\scene.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\piano.hpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\piano.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\SDL_Engine.hpp">
@@ -45,5 +51,6 @@
   <ItemGroup>
     <None Include="SDL3.dll" />
     <None Include="SDL3_image.dll" />
+    <None Include="SDL3_ttf.dll" />
   </ItemGroup>
 </Project>

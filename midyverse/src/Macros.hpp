@@ -3,11 +3,10 @@
 
 // GENERAL
 #define MAIN_FONT_SIZE 24
-#define MAIN_FONT_COLOR (SDL_Color){255, 255, 255, 255}
 #define MAIN_FONT_PATH "Liga-Sans/LigaSans-Bold.otf"
 #define FONT_PATH "assets/fonts/"
 
-#define ICON_PATH "logo.jpg"
+#define ICON_PATH "icon.png"
 #define ASSETS_IMAGES_PATH "assets/images/"
 
 // SCENE 1
