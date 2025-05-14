@@ -30,6 +30,8 @@ public:
     void SetFPS(float fps);
     float GetMaxFPS();
 
+    void SetActiveScene(Scene* scene);
+    Scene* GetActiveScene();
     void SetScene(int scene);
     int GetScene();
     
@@ -54,12 +56,10 @@ public:
 	void CalculateFPS();
 	void FPS();
 
-    bool RenderTexture(SDL_Texture* texture);
-
     bool RenderTexture(SDL_Texture* texture, float x1, float y1, float w1, float h1,
         float x2, float y2, float w2, float h2);
 
-    void Scenes();
+    bool Scenes();
     bool LoadTextures(Scene* scene);
     bool StartScene(Scene* scene);
 
@@ -89,6 +89,7 @@ private:
 	PianoKeyboard* piano;
     
     int scene;
+    Scene* activeScene;
 	Scene* scene1;
    
 };

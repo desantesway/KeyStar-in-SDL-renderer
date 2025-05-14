@@ -6,18 +6,32 @@
 #define MAIN_FONT_PATH "Liga-Sans/LigaSans-Bold.otf"
 #define FONT_PATH "assets/fonts/"
 
+#define SDL_COLOR_FPS { 0, 0, 0, 255 }
+
 #define ICON_PATH "icon.png"
 #define ASSETS_IMAGES_PATH "assets/images/"
 
+// PIANO
+#define PIANO_FOLDER_PATH "piano/"
+#define PIANO_PATH "keys.png"
+
 // SCENE 1
 
-#define SCENE1_BACKGROUND "background.jpg"
+#define SCENE1_BACKGROUND "background.png"
 
 #define CAT(a, b) \
     (a + std::string(b)).c_str()
 
 // Converts a string to a char*
 #define StrToPtr(str) (str).c_str()
+
+// Check for errors
+// IF INPUT TRUE -> DOESNT RAISE AN ERROR
+#define CHECK_RESULT_RET(expr, error_msg, ...) \
+    if (!(expr)) { \
+        __VA_ARGS__; \
+        return false; \
+    }
 
 // Check for SDL errors
 // IF INPUT TRUE -> DOESNT RAISE AN ERROR

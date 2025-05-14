@@ -1,23 +1,24 @@
 #include "SDL_Engine.hpp"
 
 SDL::SDL() {
-    window = NULL;
-    renderer = NULL;
-    name = "MidyVerse";
-    width = 1280;
-    height = 720;
-    fullscreen = 0;
-    screen_change = false;
-    isRunning = false;
-    fps = -1.0f;
-    maxfps = 120.0f;
-	mainFont = NULL;
-	FpsTexture = NULL;
+    this->window = NULL;
+    this->renderer = NULL;
+    this->name = "MidyVerse";
+    this->width = 1920;
+    this->height = 1080;
+    this->fullscreen = 0;
+    this->screen_change = false;
+    this->isRunning = false;
+    this->fps = -1.0f;
+    this->maxfps = 120.0f;
+    this->mainFont = NULL;
+    this->FpsTexture = NULL;
 
-	piano = NULL;
+    this->piano = NULL;
 
-    scene = 1;
-    scene1 = NULL;
+    this->scene = 1;
+    this->activeScene = NULL;
+    this->scene1 = NULL;
 }
 
 SDL::~SDL() {
@@ -37,7 +38,7 @@ SDL::~SDL() {
         this->mainFont = NULL;
     }
 
-	this->SetScene(-1);
+    this->SetScene(-1);
     this->Scenes();
 
     if (this->renderer) {
@@ -70,6 +71,8 @@ void SDL::SetHeight(int height) { this->height = height; screen_change = true; }
 
 void SDL::SetScene(int scene) { this->scene = scene; }
 int SDL::GetScene() { return this->scene; }
+void SDL::SetActiveScene(Scene* scene) { this->activeScene = scene; }
+Scene* SDL::GetActiveScene() { return this->activeScene; }
 
 // Sets the variables before starting the SDL engine to then start with the other function
 bool SDL::Init(std::string title, int width, int height, int fullscreen)
@@ -92,6 +95,13 @@ bool SDL::Init()
     CHECK_RESULT(TTF_Init(), "Couldn't initialize SDL TTF: ");
 
 	CHECK_RESULT(SDL_CreateWindowAndRenderer(StrToPtr(GetName()), GetWidth(), GetHeight(), GetFullscreen(), &this->window, &this->renderer), "Couldn't create window/renderer:");
+
+    if (!this->piano) {
+        this->piano = new PianoKeyboard();
+    }
+
+	CHECK_RESULT(this->piano, "Couldn't create midi: ");
+	CHECK_RESULT(this->piano->StartMidi(), "Couldn't start midi: ");
 
     // icon of the program - only is runned once and then freed
     SDL_Surface* icon_surface = IMG_Load(CAT(ASSETS_IMAGES_PATH,ICON_PATH));
@@ -138,7 +148,12 @@ bool SDL::UpdateScreen() {
 
 // This function handles the events of the game.
 void SDL::GameEvents() {
-    static SDL_Event event;   
+    static SDL_Event event; 
+    if (activeScene) {
+        if (activeScene->IsPiano()) {
+            this->piano->DetectKeys();
+        }
+    }
     while (SDL_PollEvent(&event)) {
         switch (event.type) { 
         case SDL_EVENT_QUIT:
@@ -185,9 +200,8 @@ void SDL::FPS() {
                 SDL_DestroyTexture(this->FpsTexture);
                 this->FpsTexture = NULL;
             }
-
-            SDL_Color color = { 255, 255, 255, 255 };
-            SDL_Surface* fps_surface = TTF_RenderText_Blended(this->mainFont, CAT("FPS: ", std::to_string((int)this->GetFPS())), 0, color);
+            
+            SDL_Surface* fps_surface = TTF_RenderText_Blended(this->mainFont, CAT("FPS: ", std::to_string((int)this->GetFPS())), 0, SDL_COLOR_FPS);
             VOID_CHECK_RESULT(fps_surface, "Error rendering FPS surface: ", SDL_GetError());
 
             if (fps_surface) {
@@ -255,35 +269,32 @@ void SDL::CalculateFPS() {
     currentFrame++;
 }
 
-// This function renders the texture to the screen with NULL.
-bool SDL::RenderTexture(SDL_Texture* texture) {
-
-    CHECK_RESULT(SDL_RenderTexture(this->renderer, texture, NULL, NULL), "Error rendering texture f1: ");  /* render the texture. */
-
-    return true;
-}
-
-// This function renders the texture to the screen.
 bool SDL::RenderTexture(SDL_Texture* texture, float x1, float y1, float w1, float h1,
     float x2, float y2, float w2, float h2) {
 
-    if ((x1 == 0 && y1 == 0 && w1 == 0 && h1 == 0) && (x2 == 0 && y2 == 0 && w2 == 0 && h2 == 0)) {
-        RenderTexture(texture);
+    SDL_FRect* rect1 = NULL;
+    SDL_FRect* rect2 = NULL;
+
+    if (!(x1 == 0 && y1 == 0 && w1 == 0 && h1 == 0)) {
+        rect1 = new SDL_FRect();
+        rect1->x = x1;
+        rect1->y = y1;
+        rect1->w = w1;
+        rect1->h = h1;
+    }
+    if (!(x2 == 0 && y2 == 0 && w2 == 0 && h2 == 0)) {
+        rect2 = new SDL_FRect();
+        rect2->x = x2;
+        rect2->y = y2;
+        rect2->w = w2;
+        rect2->h = h2;
     }
 
-    SDL_FRect* rect1 = new SDL_FRect();
-    rect1->x = x1;
-    rect1->y = y1;
-    rect1->w = w1;
-    rect1->h = h1;
-
-    SDL_FRect* rect2 = new SDL_FRect();
-    rect2->x = x2;
-    rect2->y = y2;
-    rect2->w = w2;
-    rect2->h = h2;
-
     CHECK_RESULT(SDL_RenderTexture(this->renderer, texture, rect1, rect2), "Error rendering texture f2: ");  /* render the texture. */
+
+    // Clean up allocated memory
+    delete rect1;
+    delete rect2;
 
     return true;
 }
@@ -310,27 +321,44 @@ void SDL::DestroyScene(Scene* scene) {
 }
 
 // This function is called to load/render the scenes depending on the variable scene.
-void SDL::Scenes() {
-
-	static Scene* scene = NULL;
+bool SDL::Scenes() {
 
     switch (this->GetScene()) {
     case -1:
-		if (this->scene1) {
-			DestroyScene(this->scene1);
-		}
-	case 1:
+        if (this->activeScene) {
+            DestroyScene(this->activeScene);
+        }
+        if (this->scene1) {
+            DestroyScene(this->scene1);
+        }
+    case 1:
         this->Scene1();
-		scene = this->scene1;
+		activeScene = this->scene1;
     }
-    if (scene->IsPiano()) {
-		if (!this->piano) {
-			this->piano = new PianoKeyboard();
+    if (activeScene->IsPiano()) {
+        static std::string location = CAT(
+            CAT(ASSETS_IMAGES_PATH, PIANO_FOLDER_PATH),
+            CAT(std::to_string(this->piano->GetKeyNum()), PIANO_PATH));
+        if (!this->piano->GetPianoTexture()) {
+            SDL_Texture* pianoTexture = NULL;
+            pianoTexture = LoadTexture(pianoTexture,location);
+            CHECK_RESULT(pianoTexture, "Error loading piano texture: ");
+
+            this->piano->SetPianoTexture(pianoTexture, location);
+
+            pianoTexture = NULL;
+           
         }
         else {
-        // render piano
+
+            CHECK_RESULT(RenderTexture(this->piano->GetPianoTexture(),
+                0, 0, this->piano->GetPianoTextureWidth(), this->piano->GetPianoTextureHeight(),
+                0, GetHeight() - (this->piano->GetPianoTextureHeight() * GetWidth())/ this->piano->GetPianoTextureWidth(), GetWidth(), (this->piano->GetPianoTextureHeight() * GetWidth()) / this->piano->GetPianoTextureWidth()),
+                CAT("Error rendering texture: ", location));
         }
-	}
+            
+    }
+    return true;
 }
 
 // This function renders the scene to the screen.
@@ -345,7 +373,10 @@ bool SDL::RenderScene(Scene* scene) {
 bool SDL::RenderTextures(std::vector<TextureData> texture_data) {
     for (TextureData& textureData : texture_data) {
         if (textureData.texture) {
-            CHECK_RESULT(RenderTexture(textureData.texture), CAT("Error rendering texture: ", textureData.location)); //IMPLEMENT FOR RENDER TEXTURE POSITION
+            CHECK_RESULT(RenderTexture(textureData.texture, 
+                textureData.coordinates[0], textureData.coordinates[1], textureData.coordinates[2], textureData.coordinates[3],
+                textureData.coordinates[4], textureData.coordinates[5], textureData.coordinates[6], textureData.coordinates[7]),
+                CAT("Error rendering texture: ", textureData.location));
         }
     }
     return true;
@@ -393,7 +424,7 @@ bool SDL::Scene1() {
     if (!this->scene1->IsSceneLoaded()) {
 
         std::vector<TextureData> Textures;
-        //Textures.push_back({ NULL, CAT(ASSETS_IMAGES_PATH, SCENE1_BACKGROUND), {0, 0, 0, 0, 0, 0, 0, 0} });
+        Textures.push_back({ NULL, CAT(ASSETS_IMAGES_PATH, SCENE1_BACKGROUND), {0, 0, 0, 0, 0, 0, 0, 0} });
 
         scene1->SetTextures(Textures);
         
