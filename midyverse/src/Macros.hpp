@@ -2,6 +2,8 @@
 #define MACROS_H
 
 // GENERAL
+#define ASSESTS_RES 4320
+
 #define MAIN_FONT_SIZE 24
 #define MAIN_FONT_PATH "Liga-Sans/LigaSans-Bold.otf"
 #define FONT_PATH "assets/fonts/"
@@ -20,6 +22,11 @@
 #define WHITE_SHADOW_PATH "whiteshadow.png"
 #define BLACK_KEY_PATH "black.png"
 #define BLACK_SHADOW_PATH "blackshadow.png"
+
+// this is info is taken from the illustrator project that measures the pixels of the keys in 8k
+#define WHITE_SHADOW_HEIGHT (204.0-94.0)
+#define BLACK_SHADOW_HEIGHT (140.0-44.0) // getting when the black key height starts
+#define WHITEB_KEY_HEIGHT (1153.0-878.0) // getting when the black shadow key height starts
 
 // SCENE 1
 

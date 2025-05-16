@@ -16,6 +16,12 @@ struct KeyTexture
 	int w;
 };
 
+struct Note
+{	
+	bool played;
+	int velocity;
+};
+
 class PianoKeyboard
 {
 public:
@@ -52,6 +58,9 @@ public:
 	void SetBlackKey(KeyTexture tex);
 	void SetBlackKeyShadow(KeyTexture tex);
 
+	std::map<int, Note> GetNotesPlayed();
+	void RemoveNote(int key_pos);
+
 	void DestroyTextures();
 
 	void DisplayInPorts();
@@ -85,6 +94,8 @@ private:
 	KeyTexture whiteKeyShadowTex;
 	KeyTexture blackKeyTex;
 	KeyTexture blackKeyShadowTex;
+
+	std::map<int, Note> notesPlayed;
 };
 
 #endif

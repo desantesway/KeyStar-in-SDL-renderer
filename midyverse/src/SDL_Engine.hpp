@@ -4,6 +4,14 @@
 #include "main.hpp"
 #include "scene.hpp"
 #include "pianokeyboard.hpp"
+#include <unordered_map>
+
+// Add this struct at the top of the file or in a suitable header:
+struct KeyAnimState {
+    float animValue;      // 0.0 = not pressed, 1.0 = pressed
+    float targetValue;    // 0.0 or 1.0
+    Uint32 lastUpdate;    // SDL_GetTicks() of last update
+};
 
 class SDL
 {
@@ -67,6 +75,10 @@ public:
     bool RenderTextures(std::vector<TextureData> texture_data);
     
     bool LoadPianoTextures();
+    bool RenderPiano();
+
+    void UpdateKeyAnim(int key, bool pressed);
+    void UpdateAllKeyAnims();
 
 	// Use only for the initialization of the program
     bool Scene1();
@@ -89,7 +101,8 @@ private:
     TTF_Font* mainFont;
 
 	PianoKeyboard* piano;
-    
+    std::unordered_map<int, KeyAnimState> keyAnimStates;
+
     int scene;
     Scene* activeScene;
 	Scene* scene1;

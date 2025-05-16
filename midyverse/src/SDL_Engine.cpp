@@ -101,7 +101,7 @@ bool SDL::Init()
 
 	CHECK_RESULT(this->piano, "Couldn't create midi: ");
 	CHECK_RESULT(this->piano->StartMidi(), "Couldn't start midi: ");
-    CHECK_RESULT(LoadPianoTextures(), "Error loading piano textures: "); // implement this to go for each part of the key
+    CHECK_RESULT(LoadPianoTextures(), "Error loading piano textures: ");
 
     // icon of the program - only is runned once and then freed
     SDL_Surface* icon_surface = IMG_Load(CAT(ASSETS_IMAGES_PATH,ICON_PATH));
@@ -335,23 +335,7 @@ bool SDL::Scenes() {
         this->Scene1();
 		activeScene = this->scene1;
     }
-    if (activeScene->IsPiano()) {
-        //RenderTexture(this->piano->GetBorderWhiteKey().tex, 0, 0, 0, 0, 0, 0, 0, 0);
-        int fullwidth = (this->piano->GetLWhiteKey().w * this->piano->GetKeyNum())/29;
-        // jsut to test
-        RenderTexture(this->piano->GetLWhiteKey().tex,
-            0, 0, 0, 0,
-            0, GetHeight() * 0.7, // shift in y
-            GetWidth()/29, // do this for as a general math 
-            GetHeight() - GetHeight() * 0.70); // height
-        //CHECK_RESULT(,
-            //CAT("Error rendering texture: ", location));
-
-        // for for white shadows
-        // for for white keys
-        // for for black shadows
-        // for for black keys
-    }
+    
     return true;
 }
 
@@ -478,5 +462,87 @@ bool SDL::LoadPianoTextures() {
 
     pianoTexture = NULL;
 
+    return true;
+}
+
+bool SDL::RenderPiano() {
+    if (!activeScene->IsPiano()) return true;
+
+    int total_keys = this->piano->GetKeyNum();
+    int full_octaves = total_keys / 12;
+    int middle_c = 60; // MIDI note number for middle C (C4)
+    int start_key = middle_c - total_keys / 2 + 12 * this->piano->GetOctave();
+    int remaining_keys = total_keys % 12;
+    int white_keys = full_octaves * 7 + std::min(remaining_keys, 7);
+    int black_keys = full_octaves * 5 + std::max(remaining_keys - 7, 0);
+
+    double width = static_cast<double>(GetWidth());
+    double height = static_cast<double>(GetHeight());
+
+    double shadow_key_width = width / white_keys;
+    double shadow_key_height = this->piano->GetWhiteKeyShadow().h;
+    double white_key_width = width / white_keys;
+    double white_key_height = this->piano->GetRoundWhiteKey().h;
+    double white_shadow_height = (height * (double)WHITE_SHADOW_HEIGHT) / ASSESTS_RES;
+    double shadow_black_key_width = this->piano->GetBlackKeyShadow().w;
+    double shadow_black_key_height = this->piano->GetBlackKeyShadow().h;
+    double wblack_height = ((height * (double)WHITEB_KEY_HEIGHT) / ASSESTS_RES) + white_shadow_height;
+    double black_key_width = this->piano->GetBlackKey().w;
+    double black_key_height = this->piano->GetBlackKey().h;
+    double black_height = (height * (double)BLACK_SHADOW_HEIGHT) / ASSESTS_RES;
+
+    // Render all keys in two passes: one for white, one for black (shadows and keys together)
+    // Pass 1: White keys and their shadows
+    for (int i = 0; i < white_keys; ++i) {
+        // White key shadow
+        float x = static_cast<float>(i * shadow_key_width);
+        float w = (i == white_keys - 1) ? static_cast<float>(width - x) : static_cast<float>(shadow_key_width);
+        RenderTexture(this->piano->GetWhiteKeyShadow().tex, 0, 0, 0, 0, x, height - shadow_key_height, w, shadow_key_height);
+
+        // White key
+        int octave = i / 7;
+        int note_in_octave = i % 7;
+        int key_pos = start_key + octave * 12 +
+            (note_in_octave == 0 ? 0 :
+                note_in_octave == 1 ? 2 :
+                note_in_octave == 2 ? 4 :
+                note_in_octave == 3 ? 5 :
+                note_in_octave == 4 ? 7 :
+                note_in_octave == 5 ? 9 : 11);
+        bool pressed = this->piano->GetNotesPlayed().count(key_pos) > 0;
+        float wx = static_cast<float>(i * white_key_width);
+        float ww = (i == white_keys - 1) ? static_cast<float>(width - wx) : static_cast<float>(shadow_key_width);
+        SDL_Texture* white_key_texture =
+            (i == white_keys - 1) ? this->piano->GetRoundWhiteKey().tex :
+            (i % 7 == 0) ? this->piano->GetLWhiteKey().tex :
+            (i % 7 == 6) ? this->piano->GetRWhiteKey().tex :
+            this->piano->GetMidWhiteKey().tex;
+        RenderTexture(white_key_texture, 0, 0, 0, 0, wx, height - white_key_height - shadow_key_height + white_shadow_height, ww, white_key_height + pressed * white_shadow_height*0.8);
+    }
+
+    double mult = white_key_width - shadow_black_key_width * 0.5;
+    // Pass 2: Black key shadows and black keys
+    for (int i = 0; i < black_keys; ++i) {
+        // Black key shadow
+        float sx = static_cast<float>(mult);
+        float sw = static_cast<float>(shadow_black_key_width);
+        RenderTexture(this->piano->GetBlackKeyShadow().tex, 0, 0, 0, 0, sx, height - shadow_black_key_height - wblack_height, sw, shadow_black_key_height);
+
+        // Black key
+        int octave = i / 5;
+        int note_in_octave = i % 5;
+        int key_pos = start_key + octave * 12 +
+            (note_in_octave == 0 ? 1 :
+                note_in_octave == 1 ? 3 :
+                note_in_octave == 2 ? 6 :
+                note_in_octave == 3 ? 8 : 10);
+        bool pressed = this->piano->GetNotesPlayed().count(key_pos) > 0;
+        float bx = static_cast<float>(mult);
+        float bw = static_cast<float>(black_key_width);
+        RenderTexture(this->piano->GetBlackKey().tex, 0, 0, 0, 0, bx, height - black_key_height - black_height - wblack_height, bw, black_key_height + pressed * black_height);
+
+        int keynum = ((i + 1) % 5 == 2 || (i + 1) % 5 == 0) ? 2 : 1;
+        mult += white_key_width * keynum;
+    }
     return true;
 }

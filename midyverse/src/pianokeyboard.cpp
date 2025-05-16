@@ -94,6 +94,14 @@ void PianoKeyboard::SetWhiteKeyShadow(KeyTexture tex) { this->whiteKeyShadowTex 
 void PianoKeyboard::SetBlackKey(KeyTexture tex) { this->blackKeyTex = tex;}
 void PianoKeyboard::SetBlackKeyShadow(KeyTexture tex) { this->blackKeyShadowTex = tex;}
 
+std::map<int, Note> PianoKeyboard::GetNotesPlayed() { return this->notesPlayed; }
+void PianoKeyboard::RemoveNote(int key_pos) {
+	auto it = this->notesPlayed.find(key_pos);
+	if (it != this->notesPlayed.end()) {
+		this->notesPlayed.erase(it);
+	}
+}
+
 bool PianoKeyboard::StartMidi() {
 
 	CHECK_RESULT_RET(StartMidiIn(),"Error starting midi in");
@@ -193,9 +201,14 @@ void PianoKeyboard::DetectKeys() {
 
 		stamp = midiin->getMessage(&message);
 		nBytes = message.size();
-		for (i = 0; i < nBytes; i++)
-			std::cout << "Byte " << i << " = " << (int)message[i] << ", ";
-		if (nBytes > 0)
-			std::cout << "stamp = " << stamp << std::endl;
+		
+		if (message.size() > 0) {
+			if ((int)message[0] == 144) {
+				this->notesPlayed.insert({ (int)message[1], {false, (int)message[2]} });
+			}
+			else if ((int)message[0] == 128) {
+				RemoveNote((int)message[1]);
+			}
+		}
 	}
 }
