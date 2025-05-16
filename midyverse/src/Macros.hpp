@@ -13,11 +13,17 @@
 
 // PIANO
 #define PIANO_FOLDER_PATH "piano/"
-#define PIANO_PATH "keys.png"
+#define RWHITE_PATH "rwhite.png"
+#define LWHITE_PATH "lwhite.png"
+#define WHITE_MID_PATH "midwhite.png"
+#define WHITE_ROUNDMID_PATH "roundwhite.png"
+#define WHITE_SHADOW_PATH "whiteshadow.png"
+#define BLACK_KEY_PATH "black.png"
+#define BLACK_SHADOW_PATH "blackshadow.png"
 
 // SCENE 1
 
-#define SCENE1_BACKGROUND "background.png"
+#define SCENE1_BACKGROUND "4320p_background.png"
 
 #define CAT(a, b) \
     (a + std::string(b)).c_str()

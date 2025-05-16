@@ -8,6 +8,14 @@
 #include "RtMidi.h"
 #include "libs.hpp"
 
+struct KeyTexture
+{
+	SDL_Texture* tex;
+	std::string location;
+	int h;
+	int w;
+};
+
 class PianoKeyboard
 {
 public:
@@ -27,12 +35,24 @@ public:
 	void SetMidioutPort(int out);
 	int GetMidioutPort();
 
-	void SetPianoTexture(SDL_Texture* texture, std::string location);
-	SDL_Texture* GetPianoTexture();
-	int GetPianoTextureHeight();
-	void SetPianoTextureHeight(int h);
-	int GetPianoTextureWidth();
-	void SetPianoTextureWidth(int w);
+	KeyTexture LoadKeyTex(KeyTexture key, SDL_Texture*& texture, std::string location);
+
+	KeyTexture GetRWhiteKey();
+	KeyTexture GetLWhiteKey();
+	KeyTexture GetMidWhiteKey();
+	KeyTexture GetRoundWhiteKey();
+	KeyTexture GetWhiteKeyShadow();
+	KeyTexture GetBlackKey();
+	KeyTexture GetBlackKeyShadow();
+	void SetRWhiteKey(KeyTexture tex);
+	void SetLWhiteKey(KeyTexture tex);
+	void SetMidWhiteKey(KeyTexture tex);
+	void SetRoundWhiteKey(KeyTexture tex);
+	void SetWhiteKeyShadow(KeyTexture tex);
+	void SetBlackKey(KeyTexture tex);
+	void SetBlackKeyShadow(KeyTexture tex);
+
+	void DestroyTextures();
 
 	void DisplayInPorts();
 	void DisplayOutPorts();
@@ -58,9 +78,13 @@ private:
 	RtMidiIn* midiin;
 	RtMidiOut* midiout;
 
-	SDL_Texture* pianoTexture;
-	int pianoTextureHeight;
-	int pianoTextureWidth;
+	KeyTexture rWhiteKeyTex;
+	KeyTexture lWhiteKeyTex;
+	KeyTexture midWhiteKeyTex;
+	KeyTexture roundWhiteKeyTex;
+	KeyTexture whiteKeyShadowTex;
+	KeyTexture blackKeyTex;
+	KeyTexture blackKeyShadowTex;
 };
 
 #endif

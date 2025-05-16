@@ -32,14 +32,13 @@ SDL::~SDL() {
         this->FpsTexture = NULL;
     }
 
-    if (this->piano) {
-		this->piano->~PianoKeyboard();
-        delete this->piano;
-        this->mainFont = NULL;
-    }
-
     this->SetScene(-1);
     this->Scenes();
+
+    if (this->piano) {
+        this->piano->~PianoKeyboard();
+        this->piano = NULL;
+    }
 
     if (this->renderer) {
         SDL_DestroyRenderer(this->renderer);
@@ -102,6 +101,7 @@ bool SDL::Init()
 
 	CHECK_RESULT(this->piano, "Couldn't create midi: ");
 	CHECK_RESULT(this->piano->StartMidi(), "Couldn't start midi: ");
+    CHECK_RESULT(LoadPianoTextures(), "Error loading piano textures: "); // implement this to go for each part of the key
 
     // icon of the program - only is runned once and then freed
     SDL_Surface* icon_surface = IMG_Load(CAT(ASSETS_IMAGES_PATH,ICON_PATH));
@@ -336,27 +336,21 @@ bool SDL::Scenes() {
 		activeScene = this->scene1;
     }
     if (activeScene->IsPiano()) {
-        static std::string location = CAT(
-            CAT(ASSETS_IMAGES_PATH, PIANO_FOLDER_PATH),
-            CAT(std::to_string(this->piano->GetKeyNum()), PIANO_PATH));
-        if (!this->piano->GetPianoTexture()) {
-            SDL_Texture* pianoTexture = NULL;
-            pianoTexture = LoadTexture(pianoTexture,location);
-            CHECK_RESULT(pianoTexture, "Error loading piano texture: ");
+        //RenderTexture(this->piano->GetBorderWhiteKey().tex, 0, 0, 0, 0, 0, 0, 0, 0);
+        int fullwidth = (this->piano->GetLWhiteKey().w * this->piano->GetKeyNum())/29;
+        // jsut to test
+        RenderTexture(this->piano->GetLWhiteKey().tex,
+            0, 0, 0, 0,
+            0, GetHeight() * 0.7, // shift in y
+            GetWidth()/29, // do this for as a general math 
+            GetHeight() - GetHeight() * 0.70); // height
+        //CHECK_RESULT(,
+            //CAT("Error rendering texture: ", location));
 
-            this->piano->SetPianoTexture(pianoTexture, location);
-
-            pianoTexture = NULL;
-           
-        }
-        else {
-
-            CHECK_RESULT(RenderTexture(this->piano->GetPianoTexture(),
-                0, 0, this->piano->GetPianoTextureWidth(), this->piano->GetPianoTextureHeight(),
-                0, GetHeight() - (this->piano->GetPianoTextureHeight() * GetWidth())/ this->piano->GetPianoTextureWidth(), GetWidth(), (this->piano->GetPianoTextureHeight() * GetWidth()) / this->piano->GetPianoTextureWidth()),
-                CAT("Error rendering texture: ", location));
-        }
-            
+        // for for white shadows
+        // for for white keys
+        // for for black shadows
+        // for for black keys
     }
     return true;
 }
@@ -436,6 +430,53 @@ bool SDL::Scene1() {
     else {
         this->RenderScene(scene1);
     }
+
+    return true;
+}
+
+bool SDL::LoadPianoTextures() {
+    SDL_Texture* pianoTexture = NULL;
+	std::string pianoFolderPath = CAT(ASSETS_IMAGES_PATH, 
+                                    CAT(PIANO_FOLDER_PATH, 
+                                        CAT(std::to_string(GetHeight()), "p_")
+                                    )
+                                  );
+    std::string location = CAT(pianoFolderPath, RWHITE_PATH);
+    pianoTexture = LoadTexture(pianoTexture, location);
+    CHECK_RESULT(pianoTexture, "Error loading piano BorderWhiteKey texture: ");
+    this->piano->SetRWhiteKey(this->piano->LoadKeyTex(this->piano->GetRWhiteKey(), pianoTexture, location));
+
+    location = CAT(pianoFolderPath, LWHITE_PATH);
+    pianoTexture = LoadTexture(pianoTexture, location);
+    CHECK_RESULT(pianoTexture, "Error loading piano BorderWhiteKey texture: ");
+    this->piano->SetLWhiteKey(this->piano->LoadKeyTex(this->piano->GetLWhiteKey(), pianoTexture, location));
+
+    location = CAT(pianoFolderPath, WHITE_MID_PATH);
+    pianoTexture = LoadTexture(pianoTexture, location);
+    CHECK_RESULT(pianoTexture, "Error loading piano BorderWhiteKey texture: ");
+    this->piano->SetMidWhiteKey(this->piano->LoadKeyTex(this->piano->GetMidWhiteKey(), pianoTexture, location));
+
+    location = CAT(pianoFolderPath, WHITE_ROUNDMID_PATH);
+    pianoTexture = LoadTexture(pianoTexture, location);
+    CHECK_RESULT(pianoTexture, "Error loading piano BorderWhiteKey texture: ");
+    this->piano->SetRoundWhiteKey(this->piano->LoadKeyTex(this->piano->GetRoundWhiteKey(), pianoTexture, location));
+
+    location = CAT(pianoFolderPath, WHITE_SHADOW_PATH);
+    pianoTexture = LoadTexture(pianoTexture, location);
+    CHECK_RESULT(pianoTexture, "Error loading piano BorderWhiteKey texture: ");
+    this->piano->SetWhiteKeyShadow(this->piano->LoadKeyTex(this->piano->GetWhiteKeyShadow(), pianoTexture, location));
+
+    location = CAT(pianoFolderPath, BLACK_KEY_PATH);
+    pianoTexture = LoadTexture(pianoTexture, location);
+    CHECK_RESULT(pianoTexture, "Error loading piano BorderWhiteKey texture: ");
+    this->piano->SetBlackKey(this->piano->LoadKeyTex(this->piano->GetBlackKey(), pianoTexture, location));
+
+    location = CAT(pianoFolderPath, BLACK_SHADOW_PATH);
+    pianoTexture = LoadTexture(pianoTexture, location);
+    CHECK_RESULT(pianoTexture, "Error loading piano BorderWhiteKey texture: ");
+    this->piano->SetBlackKeyShadow(this->piano->LoadKeyTex(this->piano->GetBlackKeyShadow(), pianoTexture, location));
+
+    pianoTexture = NULL;
 
     return true;
 }

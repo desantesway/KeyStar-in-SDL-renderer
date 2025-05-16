@@ -65,6 +65,8 @@ public:
 
     bool RenderScene(Scene* scene);
     bool RenderTextures(std::vector<TextureData> texture_data);
+    
+    bool LoadPianoTextures();
 
 	// Use only for the initialization of the program
     bool Scene1();

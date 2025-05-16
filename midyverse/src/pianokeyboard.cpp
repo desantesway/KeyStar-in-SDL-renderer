@@ -10,10 +10,6 @@ PianoKeyboard::PianoKeyboard(int midiinPort, int midioutPort) {
 	this->pedal = false;
 	this->midiinPort = midiinPort;
 	this->midioutPort = midioutPort;
-
-	this->pianoTexture = NULL;
-	this->pianoTextureWidth = 0;
-	this->pianoTextureHeight = 0;
 }
 
 PianoKeyboard::PianoKeyboard(){
@@ -26,18 +22,14 @@ PianoKeyboard::PianoKeyboard(){
 
 	this->midiinPort = -1;
 	this->midioutPort = -1;
-
-	this->pianoTexture = NULL;
-	this->pianoTextureWidth = 0;
-	this->pianoTextureHeight = 0;
 }
+
 
 PianoKeyboard::~PianoKeyboard() {
 	StopMidiIn();
 	StopMidiOut();
 
-	SDL_DestroyTexture(this->pianoTexture);
-	this->pianoTexture = NULL;
+	DestroyTextures();
 }
 
 void PianoKeyboard::SetOctave(int octave) { this->octave = octave; }
@@ -52,28 +44,55 @@ int PianoKeyboard::GetMidiinPort() { return this->midiinPort; }
 void PianoKeyboard::SetMidioutPort(int out) { this->midioutPort = out; }
 int  PianoKeyboard::GetMidioutPort() { return this->midioutPort; }
 
-void PianoKeyboard::SetPianoTexture(SDL_Texture* texture, std::string location) { 
-	unsigned int width;
-	unsigned int height;
+void PianoKeyboard::DestroyTextures() {
+	SDL_DestroyTexture(this->rWhiteKeyTex.tex);
+	this->rWhiteKeyTex.tex = NULL;
+	SDL_DestroyTexture(this->lWhiteKeyTex.tex);
+	this->lWhiteKeyTex.tex = NULL;
+	SDL_DestroyTexture(this->midWhiteKeyTex.tex);
+	this->midWhiteKeyTex.tex = NULL;
+	SDL_DestroyTexture(this->roundWhiteKeyTex.tex);
+	this->roundWhiteKeyTex.tex = NULL;
+	SDL_DestroyTexture(this->whiteKeyShadowTex.tex);
+	this->whiteKeyShadowTex.tex = NULL;
+	SDL_DestroyTexture(this->blackKeyTex.tex);
+	this->blackKeyTex.tex = NULL;
+	SDL_DestroyTexture(this->blackKeyShadowTex.tex);
+	this->blackKeyShadowTex.tex = NULL;
+}
+
+KeyTexture PianoKeyboard::LoadKeyTex(KeyTexture key, SDL_Texture*& texture, std::string location) {
+	
+	key.location = location;
+
 	unsigned char buf[8];
 
-	std::ifstream in(location);
+	std::ifstream in(key.location);
 	in.seekg(16);
 	in.read(reinterpret_cast<char*>(&buf), 8);
 
-	width = (buf[0] << 24) + (buf[1] << 16) + (buf[2] << 8) + (buf[3] << 0);
-	height = (buf[4] << 24) + (buf[5] << 16) + (buf[6] << 8) + (buf[7] << 0);
-	SetPianoTextureWidth(width);
-	SetPianoTextureHeight(height);
-	this->pianoTexture = texture; 
+	key.w = (buf[0] << 24) + (buf[1] << 16) + (buf[2] << 8) + (buf[3] << 0);
+	key.h = (buf[4] << 24) + (buf[5] << 16) + (buf[6] << 8) + (buf[7] << 0);
+	key.tex = texture; 
 
+	return key;
 }
-SDL_Texture* PianoKeyboard::GetPianoTexture() { return this->pianoTexture; }
 
-int PianoKeyboard::GetPianoTextureHeight() { return this->pianoTextureHeight; }
-void PianoKeyboard::SetPianoTextureHeight(int h) { this->pianoTextureHeight = h; }
-int PianoKeyboard::GetPianoTextureWidth() { return this->pianoTextureWidth; }
-void PianoKeyboard::SetPianoTextureWidth(int w) { this->pianoTextureWidth = w; }
+KeyTexture PianoKeyboard::GetRWhiteKey() { return this->rWhiteKeyTex; }
+KeyTexture PianoKeyboard::GetLWhiteKey() { return this->lWhiteKeyTex; }
+KeyTexture PianoKeyboard::GetMidWhiteKey() { return this->midWhiteKeyTex; }
+KeyTexture PianoKeyboard::GetRoundWhiteKey() { return this->roundWhiteKeyTex; }
+KeyTexture PianoKeyboard::GetWhiteKeyShadow() { return this->whiteKeyShadowTex; }
+KeyTexture PianoKeyboard::GetBlackKey() { return this->blackKeyTex; }
+KeyTexture PianoKeyboard::GetBlackKeyShadow() { return this->blackKeyShadowTex; }
+
+void PianoKeyboard::SetRWhiteKey(KeyTexture tex) { this->rWhiteKeyTex = tex; }
+void PianoKeyboard::SetLWhiteKey(KeyTexture tex) { this->lWhiteKeyTex = tex; }
+void PianoKeyboard::SetMidWhiteKey(KeyTexture tex) { this->midWhiteKeyTex = tex; }
+void PianoKeyboard::SetRoundWhiteKey(KeyTexture tex) { this->roundWhiteKeyTex = tex;}
+void PianoKeyboard::SetWhiteKeyShadow(KeyTexture tex) { this->whiteKeyShadowTex = tex;}
+void PianoKeyboard::SetBlackKey(KeyTexture tex) { this->blackKeyTex = tex;}
+void PianoKeyboard::SetBlackKeyShadow(KeyTexture tex) { this->blackKeyShadowTex = tex;}
 
 bool PianoKeyboard::StartMidi() {
 
