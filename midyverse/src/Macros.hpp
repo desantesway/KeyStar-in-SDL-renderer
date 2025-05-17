@@ -2,6 +2,7 @@
 #define MACROS_H
 
 // GENERAL
+
 #define ASSESTS_RES 4320
 
 #define MAIN_FONT_SIZE 24
@@ -14,6 +15,7 @@
 #define ASSETS_IMAGES_PATH "assets/images/"
 
 // PIANO
+#define MIDI_NAME "MidyVerse Output"
 #define PIANO_FOLDER_PATH "piano/"
 #define RWHITE_PATH "rwhite.png"
 #define LWHITE_PATH "lwhite.png"

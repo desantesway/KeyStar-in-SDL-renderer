@@ -166,6 +166,9 @@ void PianoKeyboard::DisplayInPorts() {
 }
 
 void PianoKeyboard::DisplayOutPorts() {
+	
+	//midiout->openVirtualPort(MIDI_NAME); //!!!!!not working on windows
+
 	unsigned int nPorts = midiout->getPortCount();
 	std::cout << "\nThere are " << nPorts << " MIDI output ports available.\n";
 	std::string portName;
@@ -185,30 +188,32 @@ void PianoKeyboard::DisplayOutPorts() {
 void PianoKeyboard::DetectKeys() {
 	if (GetMidiinPort() == -1){
 		DisplayInPorts();
-		SetMidiinPort(0);
+		SetMidiinPort(0); //!!!! to remove when theres a menu
 		midiin->openPort(GetMidiinPort());
 	}
-	else if (GetMidioutPort() == -1) {
+	if (GetMidioutPort() == -1) {
 		DisplayOutPorts();
-		SetMidioutPort(4);
+		SetMidioutPort(2);//!!!! to remove when theres a menu
+		midiout->openPort(GetMidioutPort());
 	}
-	else {
-		std::vector<unsigned char> message;
-		int nBytes, i;
-		double stamp;
+	std::vector<unsigned char> message;
+	int nBytes, i;
+	double stamp;
 
-		midiin->ignoreTypes(false, false, false);
+	midiin->ignoreTypes(false, false, false);
 
-		stamp = midiin->getMessage(&message);
-		nBytes = message.size();
+	stamp = midiin->getMessage(&message);
+	nBytes = message.size();
 		
-		if (message.size() > 0) {
-			if ((int)message[0] == 144) {
-				this->notesPlayed.insert({ (int)message[1], {false, (int)message[2]} });
-			}
-			else if ((int)message[0] == 128) {
-				RemoveNote((int)message[1]);
-			}
+	if (message.size() > 0) {
+		if ((int)message[0] == 144) {
+			this->notesPlayed.insert({ (int)message[1], {false, (int)message[2]} });
+			
 		}
+		else if ((int)message[0] == 128) {
+			RemoveNote((int)message[1]);
+		}
+		midiout->sendMessage(&message);
 	}
+	
 }
