@@ -7,6 +7,7 @@
 #include <vector>
 #include "RtMidi.h"
 #include "libs.hpp"
+#include "ChordRecognizer/chordnamer.cpp"
 
 struct KeyTexture
 {
@@ -19,6 +20,8 @@ struct KeyTexture
 struct Note
 {	
 	bool played;
+	bool pedal;
+	bool pressed;
 	int velocity;
 };
 
@@ -35,6 +38,7 @@ public:
 	int GetKeyNum();
 	void SetPedal(bool pedal);
 	bool GetPedal();
+	bool AreNotesUpdated();
 
 	void SetMidiinPort(int in);
 	int GetMidiinPort();
@@ -50,6 +54,7 @@ public:
 	KeyTexture GetWhiteKeyShadow();
 	KeyTexture GetBlackKey();
 	KeyTexture GetBlackKeyShadow();
+	KeyTexture GetBlackBlendKey();
 	void SetRWhiteKey(KeyTexture tex);
 	void SetLWhiteKey(KeyTexture tex);
 	void SetMidWhiteKey(KeyTexture tex);
@@ -57,6 +62,7 @@ public:
 	void SetWhiteKeyShadow(KeyTexture tex);
 	void SetBlackKey(KeyTexture tex);
 	void SetBlackKeyShadow(KeyTexture tex);
+	void SetBlackBlendKey(KeyTexture tex);
 
 	std::map<int, Note> GetNotesPlayed();
 	void RemoveNote(int key_pos);
@@ -73,7 +79,11 @@ public:
 	void StopMidiIn();
 	void StopMidiOut();	
 
+	void SetPedalNotes();
+	void RemovePedalNotes();
 	void DetectKeys();
+
+	std::string GetChordPlayed();
 
 private:
 
@@ -94,8 +104,10 @@ private:
 	KeyTexture whiteKeyShadowTex;
 	KeyTexture blackKeyTex;
 	KeyTexture blackKeyShadowTex;
+	KeyTexture blackBlendKeyTex;
 
 	std::map<int, Note> notesPlayed;
+	bool notesUpdated;
 };
 
 #endif

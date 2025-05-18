@@ -10,6 +10,7 @@ PianoKeyboard::PianoKeyboard(int midiinPort, int midioutPort) {
 	this->pedal = false;
 	this->midiinPort = midiinPort;
 	this->midioutPort = midioutPort;
+	this->notesUpdated = false;
 }
 
 PianoKeyboard::PianoKeyboard(){
@@ -22,6 +23,7 @@ PianoKeyboard::PianoKeyboard(){
 
 	this->midiinPort = -1;
 	this->midioutPort = -1;
+	this->notesUpdated = false;
 }
 
 
@@ -38,6 +40,7 @@ void PianoKeyboard::SetKeyNum(int key) { this->keyNum = key; }
 int PianoKeyboard::GetKeyNum() { return this->keyNum; }
 void PianoKeyboard::SetPedal(bool pedal) { this->pedal = pedal; }
 bool PianoKeyboard::GetPedal() { return this->pedal; }
+bool PianoKeyboard::AreNotesUpdated() { return this->notesUpdated; }
 
 void PianoKeyboard::SetMidiinPort(int in) { this->midiinPort = in; }
 int PianoKeyboard::GetMidiinPort() { return this->midiinPort; }
@@ -59,6 +62,8 @@ void PianoKeyboard::DestroyTextures() {
 	this->blackKeyTex.tex = NULL;
 	SDL_DestroyTexture(this->blackKeyShadowTex.tex);
 	this->blackKeyShadowTex.tex = NULL;
+	SDL_DestroyTexture(this->blackBlendKeyTex.tex);
+	this->blackBlendKeyTex.tex = NULL;
 }
 
 KeyTexture PianoKeyboard::LoadKeyTex(KeyTexture key, SDL_Texture*& texture, std::string location) {
@@ -85,6 +90,7 @@ KeyTexture PianoKeyboard::GetRoundWhiteKey() { return this->roundWhiteKeyTex; }
 KeyTexture PianoKeyboard::GetWhiteKeyShadow() { return this->whiteKeyShadowTex; }
 KeyTexture PianoKeyboard::GetBlackKey() { return this->blackKeyTex; }
 KeyTexture PianoKeyboard::GetBlackKeyShadow() { return this->blackKeyShadowTex; }
+KeyTexture PianoKeyboard::GetBlackBlendKey() { return this->blackBlendKeyTex; }
 
 void PianoKeyboard::SetRWhiteKey(KeyTexture tex) { this->rWhiteKeyTex = tex; }
 void PianoKeyboard::SetLWhiteKey(KeyTexture tex) { this->lWhiteKeyTex = tex; }
@@ -93,8 +99,10 @@ void PianoKeyboard::SetRoundWhiteKey(KeyTexture tex) { this->roundWhiteKeyTex = 
 void PianoKeyboard::SetWhiteKeyShadow(KeyTexture tex) { this->whiteKeyShadowTex = tex;}
 void PianoKeyboard::SetBlackKey(KeyTexture tex) { this->blackKeyTex = tex;}
 void PianoKeyboard::SetBlackKeyShadow(KeyTexture tex) { this->blackKeyShadowTex = tex;}
+void PianoKeyboard::SetBlackBlendKey(KeyTexture tex) { this->blackBlendKeyTex = tex; }
 
 std::map<int, Note> PianoKeyboard::GetNotesPlayed() { return this->notesPlayed; }
+
 void PianoKeyboard::RemoveNote(int key_pos) {
 	auto it = this->notesPlayed.find(key_pos);
 	if (it != this->notesPlayed.end()) {
@@ -185,11 +193,28 @@ void PianoKeyboard::DisplayOutPorts() {
 	std::cout << '\n';
 }
 
+void PianoKeyboard::SetPedalNotes() {
+	std::map<int, Note> notes;
+	for (auto i : GetNotesPlayed()) {
+		notes.insert({ i.first, {i.second.played, i.second.pressed, this->pedal, i.second.velocity } });
+	}
+	this->notesPlayed = notes;
+}
+
+void PianoKeyboard::RemovePedalNotes() {
+	for (auto i : GetNotesPlayed()) {
+		if (!i.second.pedal && !i.second.pressed) {
+			RemoveNote(i.first);
+		}
+	}
+}
+
 void PianoKeyboard::DetectKeys() {
 	if (GetMidiinPort() == -1){
 		DisplayInPorts();
 		SetMidiinPort(0); //!!!! to remove when theres a menu
-		midiin->openPort(GetMidiinPort());
+		midiin->openPort(GetMidiinPort()); // handle this error
+		midiin->ignoreTypes(false, false, false);
 	}
 	if (GetMidioutPort() == -1) {
 		DisplayOutPorts();
@@ -200,20 +225,86 @@ void PianoKeyboard::DetectKeys() {
 	int nBytes, i;
 	double stamp;
 
-	midiin->ignoreTypes(false, false, false);
+	
 
 	stamp = midiin->getMessage(&message);
 	nBytes = message.size();
 		
 	if (message.size() > 0) {
 		if ((int)message[0] == 144) {
-			this->notesPlayed.insert({ (int)message[1], {false, (int)message[2]} });
-			
+			if (this->notesPlayed.count((int)message[1])) {
+				RemoveNote((int)message[1]);
+			}
+			this->notesPlayed.insert({ (int)message[1], {false, false, true, (int)message[2]} });
+			this->notesUpdated = true;
 		}
 		else if ((int)message[0] == 128) {
-			RemoveNote((int)message[1]);
+			if (!this->pedal) {
+				RemoveNote((int)message[1]);
+				this->notesUpdated = true;
+			}
+			else {
+				std::map<int, Note> notes;
+				for (auto i : GetNotesPlayed()) {
+					notes.insert({ i.first, {i.second.played, i.second.pedal, false, i.second.velocity } });
+				}
+				this->notesPlayed = notes;
+			}
+			
+		}
+		else if ((int)message[0] == 176) {
+			if ((int)message[1] == 64) {
+				this->pedal = (bool)message[2];
+				SetPedalNotes();
+				RemovePedalNotes();
+			}
 		}
 		midiout->sendMessage(&message);
+	}
+	
+}
+
+std::string PianoKeyboard::GetChordPlayed() {
+	std::string notes[12] = {"C","Db","D","Eb","E","F","Gb","G","Ab","A","Bb","B" };
+	int root = 120;
+	std::vector<size_t> chord;
+	for (auto i : GetNotesPlayed()) {
+		chord.push_back(i.first);
+		root = std::min(root, i.first);
+	}
+
+	this->notesUpdated = false;
+	int chord_size = chord.size();
+	if (chord_size > 1) {
+		std::string name; // do to detect all chords
+		std::string original_root;
+		auto chords = name_that_chord(chord);
+		bool once = true;
+		for (const auto& chord : chords) {
+
+			
+			if (notes[chord.root] == notes[(root % 12)] && ((chord_size >= 6 && chord.num_accidentals <=1) || (chord.num_accidentals <= 0))) {
+				name = chord.base_name;
+				original_root = notes[chord.root];
+				break;
+			}
+			if (once && chord.omitted_tones.size() <= 1) {
+				name = chord.base_name;
+				original_root = notes[chord.root];
+				once = false;
+			}
+
+		}
+		if (original_root == notes[(root % 12)]) {
+			return CAT(CAT(original_root, " "), name);
+		}
+		
+		return CAT(CAT(original_root, " "), CAT(name, CAT("/", notes[(root % 12)])));
+	}else if (chord_size == 1) {
+		return CAT(notes[(root % 12)], std::to_string((int)std::floor(root/12) -1));
+	} 
+	else {
+		return " ";
 	}
 	
 }

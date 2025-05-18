@@ -77,8 +77,7 @@ public:
     bool LoadPianoTextures();
     bool RenderPiano();
 
-    void UpdateKeyAnim(int key, bool pressed);
-    void UpdateAllKeyAnims();
+    bool ChordsText();
 
 	// Use only for the initialization of the program
     bool Scene1();

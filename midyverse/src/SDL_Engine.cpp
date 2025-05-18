@@ -334,8 +334,12 @@ bool SDL::Scenes() {
     case 1:
         this->Scene1();
 		activeScene = this->scene1;
+		this->activeScene->SetDetectKeys(true);
+		ChordsText();
     }
-    
+    if (this->activeScene) {
+        
+	}
     return true;
 }
 
@@ -427,38 +431,43 @@ bool SDL::LoadPianoTextures() {
                                   );
     std::string location = CAT(pianoFolderPath, RWHITE_PATH);
     pianoTexture = LoadTexture(pianoTexture, location);
-    CHECK_RESULT(pianoTexture, "Error loading piano BorderWhiteKey texture: ");
+    CHECK_RESULT(pianoTexture, "Error loading piano RWhiteKey texture: ");
     this->piano->SetRWhiteKey(this->piano->LoadKeyTex(this->piano->GetRWhiteKey(), pianoTexture, location));
 
     location = CAT(pianoFolderPath, LWHITE_PATH);
     pianoTexture = LoadTexture(pianoTexture, location);
-    CHECK_RESULT(pianoTexture, "Error loading piano BorderWhiteKey texture: ");
+    CHECK_RESULT(pianoTexture, "Error loading piano LWhiteKey texture: ");
     this->piano->SetLWhiteKey(this->piano->LoadKeyTex(this->piano->GetLWhiteKey(), pianoTexture, location));
 
     location = CAT(pianoFolderPath, WHITE_MID_PATH);
     pianoTexture = LoadTexture(pianoTexture, location);
-    CHECK_RESULT(pianoTexture, "Error loading piano BorderWhiteKey texture: ");
+    CHECK_RESULT(pianoTexture, "Error loading piano MidWhiteKey texture: ");
     this->piano->SetMidWhiteKey(this->piano->LoadKeyTex(this->piano->GetMidWhiteKey(), pianoTexture, location));
 
     location = CAT(pianoFolderPath, WHITE_ROUNDMID_PATH);
     pianoTexture = LoadTexture(pianoTexture, location);
-    CHECK_RESULT(pianoTexture, "Error loading piano BorderWhiteKey texture: ");
+    CHECK_RESULT(pianoTexture, "Error loading piano RoundWhiteKey texture: ");
     this->piano->SetRoundWhiteKey(this->piano->LoadKeyTex(this->piano->GetRoundWhiteKey(), pianoTexture, location));
 
     location = CAT(pianoFolderPath, WHITE_SHADOW_PATH);
     pianoTexture = LoadTexture(pianoTexture, location);
-    CHECK_RESULT(pianoTexture, "Error loading piano BorderWhiteKey texture: ");
+    CHECK_RESULT(pianoTexture, "Error loading piano WhiteKeyShadow texture: ");
     this->piano->SetWhiteKeyShadow(this->piano->LoadKeyTex(this->piano->GetWhiteKeyShadow(), pianoTexture, location));
 
     location = CAT(pianoFolderPath, BLACK_KEY_PATH);
     pianoTexture = LoadTexture(pianoTexture, location);
-    CHECK_RESULT(pianoTexture, "Error loading piano BorderWhiteKey texture: ");
+    CHECK_RESULT(pianoTexture, "Error loading piano BlackKey texture: ");
     this->piano->SetBlackKey(this->piano->LoadKeyTex(this->piano->GetBlackKey(), pianoTexture, location));
 
     location = CAT(pianoFolderPath, BLACK_SHADOW_PATH);
     pianoTexture = LoadTexture(pianoTexture, location);
-    CHECK_RESULT(pianoTexture, "Error loading piano BorderWhiteKey texture: ");
+    CHECK_RESULT(pianoTexture, "Error loading piano BlackKeyShadow texture: ");
     this->piano->SetBlackKeyShadow(this->piano->LoadKeyTex(this->piano->GetBlackKeyShadow(), pianoTexture, location));
+
+    location = CAT(pianoFolderPath, BLACK_BLEND_PATH);
+    pianoTexture = LoadTexture(pianoTexture, location);
+    CHECK_RESULT(pianoTexture, "Error loading piano BlackBlendKey texture: ");
+    this->piano->SetBlackBlendKey(this->piano->LoadKeyTex(this->piano->GetBlackBlendKey(), pianoTexture, location));
 
     pianoTexture = NULL;
 
@@ -471,11 +480,11 @@ bool SDL::RenderPiano() {
     int total_keys = this->piano->GetKeyNum();
     int full_octaves = total_keys / 12;
     int middle_c = 60; // MIDI note number for middle C (C4)
-    int start_key = middle_c - total_keys / 2 + 12 * this->piano->GetOctave();
+    int raw_start = middle_c - total_keys / 2 + 12 * this->piano->GetOctave();
+    int start_key = (raw_start / 12) * 12;  // Snap to nearest lower C
     int remaining_keys = total_keys % 12;
     int white_keys = full_octaves * 7 + std::min(remaining_keys, 7);
     int black_keys = full_octaves * 5 + std::max(remaining_keys - 7, 0);
-
     double width = static_cast<double>(GetWidth());
     double height = static_cast<double>(GetHeight());
 
@@ -517,9 +526,19 @@ bool SDL::RenderPiano() {
             (i % 7 == 0) ? this->piano->GetLWhiteKey().tex :
             (i % 7 == 6) ? this->piano->GetRWhiteKey().tex :
             this->piano->GetMidWhiteKey().tex;
+
+        if (pressed) {
+            SDL_SetTextureColorMod(white_key_texture, GREEN);
+        }
+        else {
+            SDL_SetTextureColorMod(white_key_texture, 255, 255, 255);
+        }
+
         RenderTexture(white_key_texture, 0, 0, 0, 0, wx, height - white_key_height - shadow_key_height + white_shadow_height, ww, white_key_height + pressed * white_shadow_height*0.8);
     }
+    SDL_Texture* white_key_texture = NULL;
 
+    SDL_SetTextureColorMod(this->piano->GetBlackBlendKey().tex, GREEN);
     double mult = white_key_width - shadow_black_key_width * 0.5;
     // Pass 2: Black key shadows and black keys
     for (int i = 0; i < black_keys; ++i) {
@@ -537,12 +556,60 @@ bool SDL::RenderPiano() {
                 note_in_octave == 2 ? 6 :
                 note_in_octave == 3 ? 8 : 10);
         bool pressed = this->piano->GetNotesPlayed().count(key_pos) > 0;
+
         float bx = static_cast<float>(mult);
         float bw = static_cast<float>(black_key_width);
-        RenderTexture(this->piano->GetBlackKey().tex, 0, 0, 0, 0, bx, height - black_key_height - black_height - wblack_height, bw, black_key_height + pressed * black_height);
+
+        SDL_Texture* black_key_texture = NULL;
+
+        if (pressed) { // do a white version of the black 
+            black_key_texture = this->piano->GetBlackBlendKey().tex;
+        } else {
+            black_key_texture = this->piano->GetBlackKey().tex;
+		}
+        
+        RenderTexture(black_key_texture, 0, 0, 0, 0, bx, height - black_key_height - black_height - wblack_height, bw, black_key_height + pressed * black_height *1.03);
 
         int keynum = ((i + 1) % 5 == 2 || (i + 1) % 5 == 0) ? 2 : 1;
         mult += white_key_width * keynum;
+    }
+    SDL_Texture* black_key_texture = NULL;
+    return true;
+}
+
+bool SDL::ChordsText() {
+    if (this->activeScene->GetDetectKeys()) {
+		static SDL_FRect chord_rect;
+        if (this->piano->AreNotesUpdated()) {
+
+            if (this->activeScene->GetChordReconTex()) {
+                SDL_DestroyTexture(this->activeScene->GetChordReconTex());
+                this->activeScene->SetChordReconTex(NULL);
+            }
+
+            SDL_Surface* chord_surface = TTF_RenderText_Blended(this->mainFont, StrToPtr(this->piano->GetChordPlayed()), 0, SDL_COLOR_FPS); // CHANGE TO OTHER FONT SIZE
+            CHECK_RESULT(chord_surface, "Error rendering Chord Recognition surface: ", SDL_GetError());
+
+            if (chord_surface) {
+                chord_rect.y = 50.0f;
+                chord_rect.x = 50.0f;
+                chord_rect.w = (float)chord_surface->w;
+                chord_rect.h = (float)chord_surface->h;
+            }
+            this->activeScene->SetChordReconTex(SDL_CreateTextureFromSurface(this->renderer, chord_surface));
+
+            SDL_DestroySurface(chord_surface);
+            chord_surface = NULL;
+
+            CHECK_RESULT(this->activeScene->GetChordReconTex(), "Error rendering FPS texture: ", SDL_GetError());
+            //VOID_CHECK_RESULT(SDL_SetTextureScaleMode(this->FpsTexture, SDL_SCALEMODE_NEAREST), "Error setting FPS texture scale mode: ", SDL_GetError());
+        }
+
+        if (chord_rect.w != 0 && chord_rect.h != 0) {
+            SDL_RenderTexture(this->renderer, this->activeScene->GetChordReconTex(), NULL, &chord_rect);
+        }
+        
+
     }
     return true;
 }

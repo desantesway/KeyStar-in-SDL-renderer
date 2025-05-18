@@ -132,6 +132,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\ChordRecognizer\chord.hpp" />
+    <ClCompile Include="src\ChordRecognizer\chordnamer.cpp" />
+    <ClCompile Include="src\ChordRecognizer\chord_db.hpp" />
     <ClCompile Include="src\pianokeyboard.cpp" />
     <ClCompile Include="src\pianokeyboard.hpp" />
     <ClCompile Include="src\main.cpp" />

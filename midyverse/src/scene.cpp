@@ -6,12 +6,16 @@ Scene::Scene(std::vector<TextureData> loadTextures) {
     this->sceneLoaded = false;
     this->loadTextures = loadTextures;
     this->textureLoaded = false;
+    this->detectKeys = false;
+    this->chordReconTex = NULL;
 }
 // This function initializes the scene
 Scene::Scene() {
     this->isPianoOn = false;
     this->sceneLoaded = false;
     this->textureLoaded = false;
+    this->detectKeys = false;
+	this->chordReconTex = NULL;
 }
 
 // This function destroys the scene and frees memory
@@ -38,6 +42,19 @@ bool Scene::IsPiano() {
 void Scene::SetPiano(bool progress) {
     this->isPianoOn = progress;
 }
+bool Scene::GetDetectKeys() {
+    return this->detectKeys;
+}
+void Scene::SetDetectKeys(bool bl) {
+    this->detectKeys = bl;
+}
+
+SDL_Texture* Scene::GetChordReconTex() {
+    return this->chordReconTex;
+}
+void Scene::SetChordReconTex(SDL_Texture* tex) {
+    this->chordReconTex = tex;
+}
 
 // This function returns the textures of the scene
 std::vector<TextureData> Scene::GetTextures()
@@ -60,5 +77,9 @@ bool Scene::FreeTextures() {
     }
     loadTextures.clear();
 	this->textureLoaded = false;
+
+    SDL_DestroyTexture(this->chordReconTex);
+    this->chordReconTex = NULL;
+
     return true;
 }

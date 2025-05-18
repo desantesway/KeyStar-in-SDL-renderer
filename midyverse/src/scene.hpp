@@ -22,6 +22,11 @@ public:
    void SetSceneLoaded(int progress);
    bool IsTextureLoaded();
    void SetTextureLoaded(int progress);
+   bool GetDetectKeys();
+   void SetDetectKeys(bool progress);
+
+   SDL_Texture* GetChordReconTex();
+   void SetChordReconTex(SDL_Texture* tex);
 
    // this is to know if current scene should have the piano rendered by engine or not
    // doing this to avoid to load and deload piano multiple times
@@ -40,6 +45,9 @@ private:
 
 	bool textureLoaded;
 	bool sceneLoaded;
+
+	bool detectKeys;
+	SDL_Texture* chordReconTex;
 };
 
 #endif

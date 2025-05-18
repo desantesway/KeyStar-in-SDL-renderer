@@ -2,10 +2,11 @@
 #define MACROS_H
 
 // GENERAL
-
+#define GREEN 88, 204, 2
+#define DARKGREEN 88, 167, 0
 #define ASSESTS_RES 4320
 
-#define MAIN_FONT_SIZE 24
+#define MAIN_FONT_SIZE 48
 #define MAIN_FONT_PATH "Liga-Sans/LigaSans-Bold.otf"
 #define FONT_PATH "assets/fonts/"
 
@@ -24,6 +25,7 @@
 #define WHITE_SHADOW_PATH "whiteshadow.png"
 #define BLACK_KEY_PATH "black.png"
 #define BLACK_SHADOW_PATH "blackshadow.png"
+#define BLACK_BLEND_PATH "blackblend.png"
 
 // this is info is taken from the illustrator project that measures the pixels of the keys in 8k
 #define WHITE_SHADOW_HEIGHT (204.0-94.0)
@@ -32,7 +34,7 @@
 
 // SCENE 1
 
-#define SCENE1_BACKGROUND "4320p_background.png"
+#define SCENE1_BACKGROUND "s4320p_background.png"
 
 #define CAT(a, b) \
     (a + std::string(b)).c_str()
