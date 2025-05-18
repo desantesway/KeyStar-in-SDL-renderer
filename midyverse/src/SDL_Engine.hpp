@@ -4,13 +4,29 @@
 #include "main.hpp"
 #include "scene.hpp"
 #include "pianokeyboard.hpp"
+#include "clock.hpp"
 #include <unordered_map>
+#include <algorithm>
+#define _USE_MATH_DEFINES
+#include <math.h>
 
-// Add this struct at the top of the file or in a suitable header:
-struct KeyAnimState {
-    float animValue;      // 0.0 = not pressed, 1.0 = pressed
-    float targetValue;    // 0.0 or 1.0
-    Uint32 lastUpdate;    // SDL_GetTicks() of last update
+
+
+enum class AnimationCurve {
+    Linear,
+    EaseIn,
+    EaseOut,
+    EaseInOut,
+    EaseOutBounce
+};
+
+struct Animation {
+	bool direction; // true for forward, false for reverse
+    double duration;    // total duration of animation in seconds
+    double progress;    // current progress [0, 1]
+    double elapsed;     // time elapsed in seconds
+    bool finished;      // whether animation is complete
+    AnimationCurve curve;
 };
 
 class SDL
@@ -37,6 +53,8 @@ public:
     float GetFPS();
     void SetFPS(float fps);
     float GetMaxFPS();
+
+    bool Simulation();
 
     void SetActiveScene(Scene* scene);
     Scene* GetActiveScene();
@@ -69,6 +87,12 @@ public:
 
     bool Scenes();
     bool LoadTextures(Scene* scene);
+
+    void StartAnimation(std::string name, double duration);
+    void ReverseAnimation(std::string name);
+    float AnimationState(std::string name);
+    void Animate();
+
     bool StartScene(Scene* scene);
 
     bool RenderScene(Scene* scene);
@@ -93,14 +117,18 @@ private:
     int fullscreen;
     bool screen_change;
 
+	Clock clock;
+
     float fps; // set to -1 to dehactivate ingame fps
     float maxfps;
     SDL_Texture* FpsTexture;
 
+    std::map<std::string, Animation> animationStates;
+    std::vector<std::string> reversedAnimations;
+
     TTF_Font* mainFont;
 
 	PianoKeyboard* piano;
-    std::unordered_map<int, KeyAnimState> keyAnimStates;
 
     int scene;
     Scene* activeScene;

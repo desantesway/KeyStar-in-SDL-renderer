@@ -117,6 +117,24 @@ bool SDL::Init()
     return true;
 }
 
+bool SDL::Simulation() {
+    clock.tick();
+
+    UpdateScreen();
+
+    Animate();
+
+    Scenes();
+
+    RenderPiano();
+
+    FPS();
+
+    GameEvents();
+
+    return true;
+}
+
 // This function is called once per frame to render the frame.
 bool SDL::RenderFrame()
 { 
@@ -474,6 +492,117 @@ bool SDL::LoadPianoTextures() {
     return true;
 }
 
+void SDL::StartAnimation(std::string name, double duration) {
+    if (!animationStates.count(name)) {
+        animationStates.insert({ name, { true, duration, 0.0, 0.0, false, AnimationCurve::EaseOutBounce} });
+    }
+    
+}
+
+float SDL::AnimationState(std::string name) {
+    if (animationStates.count(name)) {
+		return animationStates[name].progress;
+    }
+    else {
+        return 0;
+    }
+    return 0;
+}
+
+void SDL::ReverseAnimation(std::string name) {
+    if (animationStates.count(name) && !(count(reversedAnimations.begin(), reversedAnimations.end(), name) > 0)) {
+        Animation& original = animationStates[name];
+        Animation reversed;
+
+        // Preserve original duration
+        reversed.duration = original.duration;  
+
+        // Start from current progress (reversed)
+        reversed.progress = original.progress;
+        reversed.elapsed = reversed.progress * reversed.duration;
+		reversed.curve = original.curve; // Preserve the curve type flip this if ease in to out etc
+
+        // Flip direction and reset finished state
+        reversed.direction = !original.direction;
+        reversed.finished = false;
+
+        // Update the animation
+        animationStates.erase(name);
+		animationStates.insert({ name, reversed });
+		reversedAnimations.push_back(name);
+    }
+}
+
+// 2. Helper function to apply the animation curve
+static double ApplyCurve(double t, AnimationCurve curve) {
+    switch (curve) {
+    case AnimationCurve::EaseIn:
+        return t * t;
+    case AnimationCurve::EaseOut:
+        return t * (2 - t);
+    case AnimationCurve::EaseInOut:
+        return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+    case AnimationCurve::EaseOutBounce:
+    {
+        // Apply ease-out first
+        double easedT = t * (2 - t);
+
+        // Bounce parameters (adjust these for different effects)
+        const double bounceStart = 0.5;  // When bounce kicks in (0-1)
+        const int bounces = 6;           // Number of bounces
+        const double bouncePower = 0.6;  // How high the bounces go
+        const double decay = 0.3;       // How fast bounces shrink (0-1, lower = slower decay)
+
+        if (easedT > bounceStart) {
+            double bounceT = (easedT - bounceStart) / (1 - bounceStart);
+            // Exaggerated bounce using a decaying sine wave
+            double bounce = sin(bounceT * M_PI * bounces) *
+                pow(1 - bounceT, decay) *
+                bouncePower;
+            easedT += bounce;
+        }
+        return std::max(0.0, std::min(1.0, easedT));
+    }
+    case AnimationCurve::Linear:
+    default:
+        return t;
+    }
+}
+
+// 3. Modify Animate() to use the curve
+void SDL::Animate() {
+    std::map<std::string, Animation> updatedAnimations;
+
+    for (auto& i : animationStates) {
+        Animation& anim = i.second;
+
+        anim.elapsed += anim.direction ? clock.delta : -clock.delta;
+        anim.progress = anim.elapsed / anim.duration;
+
+        if (anim.progress >= 1.0 && anim.direction) {
+            anim.progress = 1.0;
+            anim.finished = true;
+        }
+        else if (anim.progress <= 0.0 && !anim.direction) {
+            anim.progress = 0.0;
+            anim.finished = true;
+            auto it = std::find(reversedAnimations.begin(), reversedAnimations.end(), i.first);
+            if (it != reversedAnimations.end()) {
+                reversedAnimations.erase(it);
+            }
+			continue;
+        }
+
+        double clampedProgress = std::max(0.0, std::min(1.0, anim.progress));
+        double curvedProgress = ApplyCurve(clampedProgress, anim.curve);
+        anim.progress = curvedProgress;
+
+        updatedAnimations.insert({ i.first, anim });
+    }
+
+    this->animationStates = updatedAnimations;
+}
+
 bool SDL::RenderPiano() {
     if (!activeScene->IsPiano()) return true;
 
@@ -518,6 +647,7 @@ bool SDL::RenderPiano() {
                 note_in_octave == 3 ? 5 :
                 note_in_octave == 4 ? 7 :
                 note_in_octave == 5 ? 9 : 11);
+        
         bool pressed = this->piano->GetNotesPlayed().count(key_pos) > 0;
         float wx = static_cast<float>(i * white_key_width);
         float ww = (i == white_keys - 1) ? static_cast<float>(width - wx) : static_cast<float>(shadow_key_width);
@@ -527,14 +657,16 @@ bool SDL::RenderPiano() {
             (i % 7 == 6) ? this->piano->GetRWhiteKey().tex :
             this->piano->GetMidWhiteKey().tex;
 
+		std::string key_name = CAT("Key", std::to_string(key_pos));
         if (pressed) {
+			StartAnimation(key_name, 0.025);
             SDL_SetTextureColorMod(white_key_texture, GREEN);
         }
         else {
+            ReverseAnimation(CAT("Key", std::to_string(key_pos)));
             SDL_SetTextureColorMod(white_key_texture, 255, 255, 255);
         }
-
-        RenderTexture(white_key_texture, 0, 0, 0, 0, wx, height - white_key_height - shadow_key_height + white_shadow_height, ww, white_key_height + pressed * white_shadow_height*0.8);
+        RenderTexture(white_key_texture, 0, 0, 0, 0, wx, height - white_key_height - shadow_key_height + white_shadow_height, ww, white_key_height +  white_shadow_height*0.8*AnimationState(key_name));
     }
     SDL_Texture* white_key_texture = NULL;
 
@@ -562,13 +694,16 @@ bool SDL::RenderPiano() {
 
         SDL_Texture* black_key_texture = NULL;
 
+        std::string key_name = CAT("Key", std::to_string(key_pos));
         if (pressed) { // do a white version of the black 
+            StartAnimation(key_name, 0.025);
             black_key_texture = this->piano->GetBlackBlendKey().tex;
         } else {
+            ReverseAnimation(CAT("Key", std::to_string(key_pos)));
             black_key_texture = this->piano->GetBlackKey().tex;
 		}
         
-        RenderTexture(black_key_texture, 0, 0, 0, 0, bx, height - black_key_height - black_height - wblack_height, bw, black_key_height + pressed * black_height *1.03);
+        RenderTexture(black_key_texture, 0, 0, 0, 0, bx, height - black_key_height - black_height - wblack_height, bw, black_key_height + black_height *1.03 * AnimationState(key_name));
 
         int keynum = ((i + 1) % 5 == 2 || (i + 1) % 5 == 0) ? 2 : 1;
         mult += white_key_width * keynum;

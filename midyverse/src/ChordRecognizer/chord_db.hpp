@@ -1,4 +1,6 @@
-﻿#pragma once
+﻿#ifndef CHORDDB_H
+#define CHORDDB_H
+
 #include <set>
 #include <vector>
 #include <string>
@@ -109,3 +111,5 @@ const std::vector<std::pair<std::string, std::set<unsigned short>>> chord_db = {
 
     
 };
+
+#endif

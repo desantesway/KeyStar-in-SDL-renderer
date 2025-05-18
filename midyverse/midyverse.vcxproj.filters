@@ -39,6 +39,9 @@
     <ClCompile Include="src\ChordRecognizer\chord_db.hpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\clock.hpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\SDL_Engine.hpp">

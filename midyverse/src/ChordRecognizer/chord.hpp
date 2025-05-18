@@ -1,4 +1,6 @@
-﻿#pragma once
+﻿#ifndef CHORD_H
+#define CHORD_H
+
 #include <array>
 #include <vector>
 #include <string>
@@ -15,3 +17,5 @@ struct Chord {
     }
 
 };
+
+#endif

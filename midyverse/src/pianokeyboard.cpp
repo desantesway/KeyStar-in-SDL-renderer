@@ -272,7 +272,6 @@ std::string PianoKeyboard::GetChordPlayed() {
 		chord.push_back(i.first);
 		root = std::min(root, i.first);
 	}
-
 	this->notesUpdated = false;
 	int chord_size = chord.size();
 	if (chord_size > 1) {
@@ -281,8 +280,6 @@ std::string PianoKeyboard::GetChordPlayed() {
 		auto chords = name_that_chord(chord);
 		bool once = true;
 		for (const auto& chord : chords) {
-
-			
 			if (notes[chord.root] == notes[(root % 12)] && ((chord_size >= 6 && chord.num_accidentals <=1) || (chord.num_accidentals <= 0))) {
 				name = chord.base_name;
 				original_root = notes[chord.root];
