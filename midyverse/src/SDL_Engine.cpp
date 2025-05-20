@@ -135,6 +135,18 @@ bool SDL::Simulation() {
     return true;
 }
 
+bool SDL::Rendering() {
+    Scenes();
+
+    RenderPiano();
+
+    FPS();
+
+    GameEvents();
+
+    return true;
+}
+
 // This function is called once per frame to render the frame.
 bool SDL::RenderFrame()
 { 
@@ -196,6 +208,7 @@ void SDL::GameEvents() {
             break;
         }
     }
+
 }
 
 void SDL::SetFPS(float fps) { this->fps = fps; }

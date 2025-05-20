@@ -209,58 +209,69 @@ void PianoKeyboard::RemovePedalNotes() {
 	}
 }
 
+// fix locked keys
 void PianoKeyboard::DetectKeys() {
 	if (GetMidiinPort() == -1){
 		DisplayInPorts();
 		SetMidiinPort(0); //!!!! to remove when theres a menu
 		midiin->openPort(GetMidiinPort()); // handle this error
 		midiin->ignoreTypes(false, false, false);
+
 	}
 	if (GetMidioutPort() == -1) {
 		DisplayOutPorts();
 		SetMidioutPort(2);//!!!! to remove when theres a menu
 		midiout->openPort(GetMidioutPort());
 	}
-	std::vector<unsigned char> message;
+	static std::vector<unsigned char> message;
 	int nBytes, i;
+
+	bool done = false;
 	double stamp;
-
 	
+	while (!done) {
+		stamp = midiin->getMessage(&message);
+		nBytes = message.size();
 
-	stamp = midiin->getMessage(&message);
-	nBytes = message.size();
-		
-	if (message.size() > 0) {
-		if ((int)message[0] == 144) {
-			if (this->notesPlayed.count((int)message[1])) {
-				RemoveNote((int)message[1]);
-			}
-			this->notesPlayed.insert({ (int)message[1], {false, false, true, (int)message[2]} });
-			this->notesUpdated = true;
-		}
-		else if ((int)message[0] == 128) {
-			if (!this->pedal) {
-				RemoveNote((int)message[1]);
+		if (message.size() > 0) {
+			if ((int)message[0] == 144) {
+				if (this->notesPlayed.count((int)message[1])) {
+					this->notesPlayed[(int)message[1]] = { false, false, true, (int)message[2] };
+				}
+				else {
+					this->notesPlayed.insert({ (int)message[1], {false, false, true, (int)message[2]} });
+					this->notesUpdated = true;
+				}
 				this->notesUpdated = true;
 			}
-			else {
-				std::map<int, Note> notes;
-				for (auto i : GetNotesPlayed()) {
-					notes.insert({ i.first, {i.second.played, i.second.pedal, false, i.second.velocity } });
+			else if ((int)message[0] == 128) {
+				if (!this->pedal) {
+					RemoveNote((int)message[1]);
+					this->notesUpdated = true;
 				}
-				this->notesPlayed = notes;
+				else {
+					std::map<int, Note> notes;
+					for (auto i : GetNotesPlayed()) {
+						notes.insert({ i.first, {i.second.played, i.second.pedal, false, i.second.velocity } });
+					}
+					this->notesPlayed = notes;
+				}
+
 			}
-			
-		}
-		else if ((int)message[0] == 176) {
-			if ((int)message[1] == 64) {
-				this->pedal = (bool)message[2];
-				SetPedalNotes();
-				RemovePedalNotes();
+			else if ((int)message[0] == 176) {
+				if ((int)message[1] == 64) {
+					this->pedal = (bool)message[2];
+					SetPedalNotes();
+					RemovePedalNotes();
+				}
 			}
+			midiout->sendMessage(&message);
 		}
-		midiout->sendMessage(&message);
+		else {
+			done = true;
+		}
 	}
+	
 	
 }
 

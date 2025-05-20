@@ -55,6 +55,7 @@ public:
     float GetMaxFPS();
 
     bool Simulation();
+    bool Rendering();
 
     void SetActiveScene(Scene* scene);
     Scene* GetActiveScene();

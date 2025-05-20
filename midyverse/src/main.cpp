@@ -1,7 +1,9 @@
 /* TODOS:
 * PRIORITY IN TEXTURE RENDERING - MIGHT NOT NEED, JUST IMPORT ON THE VECTOR BY CORRECT ORDER
 * HANDLE MOVING WINDOW
+* TRANSLATE KEY VELOCITY TO ANIMATION
 * SEPARAR ANIMATION TO A DIF FILE
+* PEDAL ANIMATION
 * KEY NAME ON PRESSED KEYS
 * 7. DO PIANO ANIMATION FOR MOUSE
 * 8. REMAKE CHORD RECOGNITION FOR CPP
@@ -38,21 +40,14 @@ void SDL_Free(SDL* sdl) {
 // This function is called once per frame to render the frame.
 void SDL_Run(SDL* sdl) {
 
-    Uint64 NOW = SDL_GetPerformanceCounter();
-    Uint64 LAST = 0;
-    double deltaTime = 0;
-
     while (sdl->IsRunning()) {
-		float startTime = (float)SDL_GetTicks();  // Get the start time of the frame
-
-        LAST = NOW;
-        NOW = SDL_GetPerformanceCounter();
-
-		  // Call the game events function
+		float startTime = (float)SDL_GetTicks();
 
         sdl->ClearFrame();
 
         sdl->Simulation();
+
+        sdl->Rendering();
 
         sdl->RenderFrame();
 
