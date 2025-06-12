@@ -18,7 +18,7 @@ PianoKeyboard::PianoKeyboard(){
 	this->midiout = NULL;
 
 	this->octave = 0;
-	this->keyNum = 49;
+	this->keyNum = 85;
 	this->pedal = false;
 
 	this->midiinPort = -1;
@@ -56,8 +56,6 @@ void PianoKeyboard::DestroyTextures() {
 	this->midWhiteKeyTex.tex = NULL;
 	SDL_DestroyTexture(this->roundWhiteKeyTex.tex);
 	this->roundWhiteKeyTex.tex = NULL;
-	SDL_DestroyTexture(this->whiteKeyShadowTex.tex);
-	this->whiteKeyShadowTex.tex = NULL;
 	SDL_DestroyTexture(this->blackKeyTex.tex);
 	this->blackKeyTex.tex = NULL;
 	SDL_DestroyTexture(this->blackKeyShadowTex.tex);
@@ -87,7 +85,6 @@ KeyTexture PianoKeyboard::GetRWhiteKey() { return this->rWhiteKeyTex; }
 KeyTexture PianoKeyboard::GetLWhiteKey() { return this->lWhiteKeyTex; }
 KeyTexture PianoKeyboard::GetMidWhiteKey() { return this->midWhiteKeyTex; }
 KeyTexture PianoKeyboard::GetRoundWhiteKey() { return this->roundWhiteKeyTex; }
-KeyTexture PianoKeyboard::GetWhiteKeyShadow() { return this->whiteKeyShadowTex; }
 KeyTexture PianoKeyboard::GetBlackKey() { return this->blackKeyTex; }
 KeyTexture PianoKeyboard::GetBlackKeyShadow() { return this->blackKeyShadowTex; }
 KeyTexture PianoKeyboard::GetBlackBlendKey() { return this->blackBlendKeyTex; }
@@ -96,7 +93,6 @@ void PianoKeyboard::SetRWhiteKey(KeyTexture tex) { this->rWhiteKeyTex = tex; }
 void PianoKeyboard::SetLWhiteKey(KeyTexture tex) { this->lWhiteKeyTex = tex; }
 void PianoKeyboard::SetMidWhiteKey(KeyTexture tex) { this->midWhiteKeyTex = tex; }
 void PianoKeyboard::SetRoundWhiteKey(KeyTexture tex) { this->roundWhiteKeyTex = tex;}
-void PianoKeyboard::SetWhiteKeyShadow(KeyTexture tex) { this->whiteKeyShadowTex = tex;}
 void PianoKeyboard::SetBlackKey(KeyTexture tex) { this->blackKeyTex = tex;}
 void PianoKeyboard::SetBlackKeyShadow(KeyTexture tex) { this->blackKeyShadowTex = tex;}
 void PianoKeyboard::SetBlackBlendKey(KeyTexture tex) { this->blackBlendKeyTex = tex; }

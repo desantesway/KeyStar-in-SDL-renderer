@@ -81,6 +81,12 @@ public:
 	void CalculateFPS();
 	void FPS();
 
+	SDL_FRect* GenerateFRect(float x, float y, float w, float h);
+
+    bool RenderTexture(SDL_Texture* texture);
+    bool RenderTexture(SDL_Texture* texture, SDL_FRect* rect1, SDL_FRect* rect2);
+    bool RenderTexture(SDL_Texture* texture, float x1, float y1, float w1, float h1,
+        bool rect);
     bool RenderTexture(SDL_Texture* texture, float x1, float y1, float w1, float h1,
         float x2, float y2, float w2, float h2);
 

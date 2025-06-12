@@ -74,6 +74,15 @@ bool Scene::FreeTextures() {
             SDL_DestroyTexture(textureData.texture);
             textureData.texture = NULL;
         }
+        if (textureData.rect1) {
+            delete textureData.rect1;
+            textureData.rect1 = NULL;
+        }
+        if (textureData.rect2) {
+            delete textureData.rect2;
+            textureData.rect2 = NULL;
+        }
+
     }
     loadTextures.clear();
 	this->textureLoaded = false;

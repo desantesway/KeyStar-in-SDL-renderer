@@ -300,26 +300,66 @@ void SDL::CalculateFPS() {
     currentFrame++;
 }
 
+SDL_FRect* SDL::GenerateFRect(float x, float y, float w, float h) {
+    SDL_FRect* rect = new SDL_FRect();
+    rect->x = x;
+    rect->y = y;
+    rect->w = w;
+    rect->h = h;
+	return rect;
+}
+
+bool SDL::RenderTexture(SDL_Texture* texture) {
+
+    CHECK_RESULT(SDL_RenderTexture(this->renderer, texture, NULL, NULL), "Error rendering texture f2: ");
+
+    return true;
+}
+
+bool SDL::RenderTexture(SDL_Texture* texture, float x1, float y1, float w1, float h1,
+    bool rect) {
+
+    SDL_FRect* nrect = new SDL_FRect();
+    nrect->x = x1;
+    nrect->y = y1;
+    nrect->w = w1;
+    nrect->h = h1;
+
+    if (rect) {
+        CHECK_RESULT(SDL_RenderTexture(this->renderer, texture, nrect, NULL), "Error rendering texture f2: ");
+    }
+    else {
+        CHECK_RESULT(SDL_RenderTexture(this->renderer, texture, NULL, nrect), "Error rendering texture f2: ");
+    }
+
+      /* render the texture. */
+
+    // Clean up allocated memory
+    delete nrect;
+
+    return true;
+}
+
+bool SDL::RenderTexture(SDL_Texture* texture, SDL_FRect* rect1, SDL_FRect* rect2) {
+
+    CHECK_RESULT(SDL_RenderTexture(this->renderer, texture, rect1, rect2), "Error rendering texture f2: ");  /* render the texture. */
+
+    return true;
+}
+
 bool SDL::RenderTexture(SDL_Texture* texture, float x1, float y1, float w1, float h1,
     float x2, float y2, float w2, float h2) {
 
-    SDL_FRect* rect1 = NULL;
-    SDL_FRect* rect2 = NULL;
-
-    if (!(x1 == 0 && y1 == 0 && w1 == 0 && h1 == 0)) {
-        rect1 = new SDL_FRect();
-        rect1->x = x1;
-        rect1->y = y1;
-        rect1->w = w1;
-        rect1->h = h1;
-    }
-    if (!(x2 == 0 && y2 == 0 && w2 == 0 && h2 == 0)) {
-        rect2 = new SDL_FRect();
-        rect2->x = x2;
-        rect2->y = y2;
-        rect2->w = w2;
-        rect2->h = h2;
-    }
+    SDL_FRect* rect1 = new SDL_FRect();
+    rect1->x = x1;
+    rect1->y = y1;
+    rect1->w = w1;
+    rect1->h = h1;
+    SDL_FRect* rect2 = new SDL_FRect();
+    rect2->x = x2;
+    rect2->y = y2;
+    rect2->w = w2;
+    rect2->h = h2;
 
     CHECK_RESULT(SDL_RenderTexture(this->renderer, texture, rect1, rect2), "Error rendering texture f2: ");  /* render the texture. */
 
@@ -386,10 +426,10 @@ bool SDL::RenderScene(Scene* scene) {
 bool SDL::RenderTextures(std::vector<TextureData> texture_data) {
     for (TextureData& textureData : texture_data) {
         if (textureData.texture) {
-            CHECK_RESULT(RenderTexture(textureData.texture, 
-                textureData.coordinates[0], textureData.coordinates[1], textureData.coordinates[2], textureData.coordinates[3],
-                textureData.coordinates[4], textureData.coordinates[5], textureData.coordinates[6], textureData.coordinates[7]),
+            CHECK_RESULT(RenderTexture(textureData.texture,
+                textureData.rect1, textureData.rect2),
                 CAT("Error rendering texture: ", textureData.location));
+            
         }
     }
     return true;
@@ -436,7 +476,7 @@ bool SDL::Scene1() {
     if (!this->scene1->IsSceneLoaded()) {
 
         std::vector<TextureData> Textures;
-        Textures.push_back({ NULL, CAT(ASSETS_IMAGES_PATH, SCENE1_BACKGROUND), {0, 0, 0, 0, 0, 0, 0, 0} });
+        Textures.push_back({ NULL, CAT(ASSETS_IMAGES_PATH, SCENE1_BACKGROUND), NULL, NULL});
 
         scene1->SetTextures(Textures);
         
@@ -478,11 +518,6 @@ bool SDL::LoadPianoTextures() {
     pianoTexture = LoadTexture(pianoTexture, location);
     CHECK_RESULT(pianoTexture, "Error loading piano RoundWhiteKey texture: ");
     this->piano->SetRoundWhiteKey(this->piano->LoadKeyTex(this->piano->GetRoundWhiteKey(), pianoTexture, location));
-
-    location = CAT(pianoFolderPath, WHITE_SHADOW_PATH);
-    pianoTexture = LoadTexture(pianoTexture, location);
-    CHECK_RESULT(pianoTexture, "Error loading piano WhiteKeyShadow texture: ");
-    this->piano->SetWhiteKeyShadow(this->piano->LoadKeyTex(this->piano->GetWhiteKeyShadow(), pianoTexture, location));
 
     location = CAT(pianoFolderPath, BLACK_KEY_PATH);
     pianoTexture = LoadTexture(pianoTexture, location);
@@ -618,36 +653,39 @@ void SDL::Animate() {
 bool SDL::RenderPiano() {
     if (!activeScene->IsPiano()) return true;
 
+    // Pseudocode plan:
+    // 1. For 88 keys, ensure the piano starts at A0 (MIDI 21) and ends at C8 (MIDI 108).
+    // 2. For other key counts, center the keys around middle C (MIDI 60) as before.
+    // 3. Adjust start_key calculation to snap to A0 for 88 keys, otherwise use the old logic.
+
     int total_keys = this->piano->GetKeyNum();
     int full_octaves = total_keys / 12;
     int middle_c = 60; // MIDI note number for middle C (C4)
-    int raw_start = middle_c - total_keys / 2 + 12 * this->piano->GetOctave();
-    int start_key = (raw_start / 12) * 12;  // Snap to nearest lower C
+
+    int start_key = middle_c - total_keys / 2 + 12 * this->piano->GetOctave();
+
     int remaining_keys = total_keys % 12;
     int white_keys = full_octaves * 7 + std::min(remaining_keys, 7);
     int black_keys = full_octaves * 5 + std::max(remaining_keys - 7, 0);
     double width = static_cast<double>(GetWidth());
     double height = static_cast<double>(GetHeight());
-
     double shadow_key_width = width / white_keys;
-    double shadow_key_height = this->piano->GetWhiteKeyShadow().h;
     double white_key_width = width / white_keys;
     double white_key_height = this->piano->GetRoundWhiteKey().h;
     double white_shadow_height = (height * (double)WHITE_SHADOW_HEIGHT) / ASSESTS_RES;
-    double shadow_black_key_width = this->piano->GetBlackKeyShadow().w;
+    double shadow_black_key_width = this->piano->GetBlackKeyShadow().w * 49 / piano->GetKeyNum();
     double shadow_black_key_height = this->piano->GetBlackKeyShadow().h;
     double wblack_height = ((height * (double)WHITEB_KEY_HEIGHT) / ASSESTS_RES) + white_shadow_height;
-    double black_key_width = this->piano->GetBlackKey().w;
+    double black_key_width = this->piano->GetBlackKey().w * 49 / piano->GetKeyNum();
     double black_key_height = this->piano->GetBlackKey().h;
     double black_height = (height * (double)BLACK_SHADOW_HEIGHT) / ASSESTS_RES;
+
+    SDL_SetRenderDrawColor(this->renderer, 229, 229, 229, 255);
+    SDL_RenderFillRect(this->renderer, GenerateFRect(0, height - white_shadow_height * 2, width, white_shadow_height * 2));
 
     // Render all keys in two passes: one for white, one for black (shadows and keys together)
     // Pass 1: White keys and their shadows
     for (int i = 0; i < white_keys; ++i) {
-        // White key shadow
-        float x = static_cast<float>(i * shadow_key_width);
-        float w = (i == white_keys - 1) ? static_cast<float>(width - x) : static_cast<float>(shadow_key_width);
-        RenderTexture(this->piano->GetWhiteKeyShadow().tex, 0, 0, 0, 0, x, height - shadow_key_height, w, shadow_key_height);
 
         // White key
         int octave = i / 7;
@@ -678,7 +716,7 @@ bool SDL::RenderPiano() {
             ReverseAnimation(CAT("Key", std::to_string(key_pos)), AnimationCurve::EaseOutBounce);
             SDL_SetTextureColorMod(white_key_texture, 255, 255, 255);
         }
-        RenderTexture(white_key_texture, 0, 0, 0, 0, wx, height - white_key_height - shadow_key_height + white_shadow_height, ww, white_key_height +  white_shadow_height*0.8*AnimationState(key_name));
+        RenderTexture(white_key_texture, wx, height - white_key_height - white_shadow_height, ww, white_key_height +  white_shadow_height*AnimationState(key_name), false);
     }
     SDL_Texture* white_key_texture = NULL;
 
@@ -689,7 +727,7 @@ bool SDL::RenderPiano() {
         // Black key shadow
         float sx = static_cast<float>(mult);
         float sw = static_cast<float>(shadow_black_key_width);
-        RenderTexture(this->piano->GetBlackKeyShadow().tex, 0, 0, 0, 0, sx, height - shadow_black_key_height - wblack_height, sw, shadow_black_key_height);
+        RenderTexture(this->piano->GetBlackKeyShadow().tex, sx, height - shadow_black_key_height - wblack_height, sw, shadow_black_key_height, false);
 
         // Black key
         int octave = i / 5;
@@ -715,7 +753,7 @@ bool SDL::RenderPiano() {
             black_key_texture = this->piano->GetBlackKey().tex;
 		}
         
-        RenderTexture(black_key_texture, 0, 0, 0, 0, bx, height - black_key_height - black_height - wblack_height, bw, black_key_height + black_height *1.03 * AnimationState(key_name));
+        RenderTexture(black_key_texture, bx, height - black_key_height - black_height - wblack_height , bw, black_key_height + black_height *1.03 * AnimationState(key_name), false);
 
         int keynum = ((i + 1) % 5 == 2 || (i + 1) % 5 == 0) ? 2 : 1;
         mult += white_key_width * keynum;

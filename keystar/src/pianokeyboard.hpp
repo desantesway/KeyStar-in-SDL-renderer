@@ -51,7 +51,6 @@ public:
 	KeyTexture GetLWhiteKey();
 	KeyTexture GetMidWhiteKey();
 	KeyTexture GetRoundWhiteKey();
-	KeyTexture GetWhiteKeyShadow();
 	KeyTexture GetBlackKey();
 	KeyTexture GetBlackKeyShadow();
 	KeyTexture GetBlackBlendKey();
@@ -59,7 +58,6 @@ public:
 	void SetLWhiteKey(KeyTexture tex);
 	void SetMidWhiteKey(KeyTexture tex);
 	void SetRoundWhiteKey(KeyTexture tex);
-	void SetWhiteKeyShadow(KeyTexture tex);
 	void SetBlackKey(KeyTexture tex);
 	void SetBlackKeyShadow(KeyTexture tex);
 	void SetBlackBlendKey(KeyTexture tex);
@@ -101,7 +99,6 @@ private:
 	KeyTexture lWhiteKeyTex;
 	KeyTexture midWhiteKeyTex;
 	KeyTexture roundWhiteKeyTex;
-	KeyTexture whiteKeyShadowTex;
 	KeyTexture blackKeyTex;
 	KeyTexture blackKeyShadowTex;
 	KeyTexture blackBlendKeyTex;

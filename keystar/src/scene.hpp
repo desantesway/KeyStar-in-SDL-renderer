@@ -8,7 +8,8 @@ struct TextureData
 {  
 	SDL_Texture* texture;
 	std::string location;  
-	int coordinates[8]; // x1, y1, w1, z1, x2, y2, w2, z2  
+	SDL_FRect* rect1; // x1, y1, w1, z1
+	SDL_FRect* rect2; // x2, y2, w2, z2  
 };  
 
 class Scene  

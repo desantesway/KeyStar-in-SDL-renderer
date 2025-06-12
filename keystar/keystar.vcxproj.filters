@@ -59,11 +59,30 @@
     <ClInclude Include="src\scene.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="SDL3.dll" />
     <None Include="SDL3_image.dll" />
     <None Include="SDL3_ttf.dll" />
     <None Include="rtmidi.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="keystar.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="icon1.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="assets\images\icon.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="assets\images\icon.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

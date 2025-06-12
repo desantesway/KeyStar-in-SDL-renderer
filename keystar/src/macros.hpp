@@ -12,7 +12,7 @@
 #define MAIN_FONT_PATH "Liga-Sans/LigaSans-Bold.otf"
 #define FONT_PATH "assets/fonts/"
 
-#define SDL_COLOR_FPS { 0, 0, 0, 255 }
+#define SDL_COLOR_FPS { 200, 200, 200, 255 }
 
 #define ICON_PATH "icon.png"
 #define ASSETS_IMAGES_PATH "assets/images/"
@@ -30,17 +30,15 @@
 #define BLACK_BLEND_PATH "blackblend.png"
 
 // this is info is taken from the illustrator project that measures the pixels of the keys in 8k
-#define WHITE_SHADOW_HEIGHT (204.0-94.0)
-#define BLACK_SHADOW_HEIGHT (140.0-44.0) // getting when the black key height starts
-#define WHITEB_KEY_HEIGHT (1153.0-878.0) // getting when the black shadow key height starts
+#define WHITE_SHADOW_HEIGHT (83.0)
+#define BLACK_SHADOW_HEIGHT (96.0) // getting when the black key height starts
+#define WHITEB_KEY_HEIGHT (290.0) // getting when the black shadow key height starts
 
 // DEBUG/RELEASE
 
-
-
 // SCENE 1
 
-#define SCENE1_BACKGROUND "s4320p_background.png"
+#define SCENE1_BACKGROUND "main_menu/4320p_background.png"
 
 #define CAT(a, b) \
     (a + std::string(b)).c_str()
