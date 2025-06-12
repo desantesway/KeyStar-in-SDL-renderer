@@ -17,6 +17,16 @@ struct KeyTexture
 	int w;
 };
 
+struct KeyTextures {
+	KeyTexture rWhiteKeyTex;
+	KeyTexture lWhiteKeyTex;
+	KeyTexture midWhiteKeyTex;
+	KeyTexture roundWhiteKeyTex;
+	KeyTexture blackKeyTex;
+	KeyTexture blackKeyShadowTex;
+	KeyTexture blackBlendKeyTex;
+};
+
 struct Note
 {	
 	bool played;
@@ -95,13 +105,7 @@ private:
 	RtMidiIn* midiin;
 	RtMidiOut* midiout;
 
-	KeyTexture rWhiteKeyTex;
-	KeyTexture lWhiteKeyTex;
-	KeyTexture midWhiteKeyTex;
-	KeyTexture roundWhiteKeyTex;
-	KeyTexture blackKeyTex;
-	KeyTexture blackKeyShadowTex;
-	KeyTexture blackBlendKeyTex;
+	KeyTextures keyTextures;
 
 	std::map<int, Note> notesPlayed;
 	bool notesUpdated;

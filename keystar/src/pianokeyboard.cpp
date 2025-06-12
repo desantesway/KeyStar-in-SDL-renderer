@@ -18,7 +18,7 @@ PianoKeyboard::PianoKeyboard(){
 	this->midiout = NULL;
 
 	this->octave = 0;
-	this->keyNum = 85;
+	this->keyNum = 49;
 	this->pedal = false;
 
 	this->midiinPort = -1;
@@ -48,20 +48,20 @@ void PianoKeyboard::SetMidioutPort(int out) { this->midioutPort = out; }
 int  PianoKeyboard::GetMidioutPort() { return this->midioutPort; }
 
 void PianoKeyboard::DestroyTextures() {
-	SDL_DestroyTexture(this->rWhiteKeyTex.tex);
-	this->rWhiteKeyTex.tex = NULL;
-	SDL_DestroyTexture(this->lWhiteKeyTex.tex);
-	this->lWhiteKeyTex.tex = NULL;
-	SDL_DestroyTexture(this->midWhiteKeyTex.tex);
-	this->midWhiteKeyTex.tex = NULL;
-	SDL_DestroyTexture(this->roundWhiteKeyTex.tex);
-	this->roundWhiteKeyTex.tex = NULL;
-	SDL_DestroyTexture(this->blackKeyTex.tex);
-	this->blackKeyTex.tex = NULL;
-	SDL_DestroyTexture(this->blackKeyShadowTex.tex);
-	this->blackKeyShadowTex.tex = NULL;
-	SDL_DestroyTexture(this->blackBlendKeyTex.tex);
-	this->blackBlendKeyTex.tex = NULL;
+	SDL_DestroyTexture(this->keyTextures.rWhiteKeyTex.tex);
+	this->keyTextures.rWhiteKeyTex.tex = NULL;
+	SDL_DestroyTexture(this->keyTextures.lWhiteKeyTex.tex);
+	this->keyTextures.lWhiteKeyTex.tex = NULL;
+	SDL_DestroyTexture(this->keyTextures.midWhiteKeyTex.tex);
+	this->keyTextures.midWhiteKeyTex.tex = NULL;
+	SDL_DestroyTexture(this->keyTextures.roundWhiteKeyTex.tex);
+	this->keyTextures.roundWhiteKeyTex.tex = NULL;
+	SDL_DestroyTexture(this->keyTextures.blackKeyTex.tex);
+	this->keyTextures.blackKeyTex.tex = NULL;
+	SDL_DestroyTexture(this->keyTextures.blackKeyShadowTex.tex);
+	this->keyTextures.blackKeyShadowTex.tex = NULL;
+	SDL_DestroyTexture(this->keyTextures.blackBlendKeyTex.tex);
+	this->keyTextures.blackBlendKeyTex.tex = NULL;
 }
 
 KeyTexture PianoKeyboard::LoadKeyTex(KeyTexture key, SDL_Texture*& texture, std::string location) {
@@ -81,21 +81,21 @@ KeyTexture PianoKeyboard::LoadKeyTex(KeyTexture key, SDL_Texture*& texture, std:
 	return key;
 }
 
-KeyTexture PianoKeyboard::GetRWhiteKey() { return this->rWhiteKeyTex; }
-KeyTexture PianoKeyboard::GetLWhiteKey() { return this->lWhiteKeyTex; }
-KeyTexture PianoKeyboard::GetMidWhiteKey() { return this->midWhiteKeyTex; }
-KeyTexture PianoKeyboard::GetRoundWhiteKey() { return this->roundWhiteKeyTex; }
-KeyTexture PianoKeyboard::GetBlackKey() { return this->blackKeyTex; }
-KeyTexture PianoKeyboard::GetBlackKeyShadow() { return this->blackKeyShadowTex; }
-KeyTexture PianoKeyboard::GetBlackBlendKey() { return this->blackBlendKeyTex; }
+KeyTexture PianoKeyboard::GetRWhiteKey() { return this->keyTextures.rWhiteKeyTex; }
+KeyTexture PianoKeyboard::GetLWhiteKey() { return this->keyTextures.lWhiteKeyTex; }
+KeyTexture PianoKeyboard::GetMidWhiteKey() { return this->keyTextures.midWhiteKeyTex; }
+KeyTexture PianoKeyboard::GetRoundWhiteKey() { return this->keyTextures.roundWhiteKeyTex; }
+KeyTexture PianoKeyboard::GetBlackKey() { return this->keyTextures.blackKeyTex; }
+KeyTexture PianoKeyboard::GetBlackKeyShadow() { return this->keyTextures.blackKeyShadowTex; }
+KeyTexture PianoKeyboard::GetBlackBlendKey() { return this->keyTextures.blackBlendKeyTex; }
 
-void PianoKeyboard::SetRWhiteKey(KeyTexture tex) { this->rWhiteKeyTex = tex; }
-void PianoKeyboard::SetLWhiteKey(KeyTexture tex) { this->lWhiteKeyTex = tex; }
-void PianoKeyboard::SetMidWhiteKey(KeyTexture tex) { this->midWhiteKeyTex = tex; }
-void PianoKeyboard::SetRoundWhiteKey(KeyTexture tex) { this->roundWhiteKeyTex = tex;}
-void PianoKeyboard::SetBlackKey(KeyTexture tex) { this->blackKeyTex = tex;}
-void PianoKeyboard::SetBlackKeyShadow(KeyTexture tex) { this->blackKeyShadowTex = tex;}
-void PianoKeyboard::SetBlackBlendKey(KeyTexture tex) { this->blackBlendKeyTex = tex; }
+void PianoKeyboard::SetRWhiteKey(KeyTexture tex) { this->keyTextures.rWhiteKeyTex = tex; }
+void PianoKeyboard::SetLWhiteKey(KeyTexture tex) { this->keyTextures.lWhiteKeyTex = tex; }
+void PianoKeyboard::SetMidWhiteKey(KeyTexture tex) { this->keyTextures.midWhiteKeyTex = tex; }
+void PianoKeyboard::SetRoundWhiteKey(KeyTexture tex) { this->keyTextures.roundWhiteKeyTex = tex;}
+void PianoKeyboard::SetBlackKey(KeyTexture tex) { this->keyTextures.blackKeyTex = tex;}
+void PianoKeyboard::SetBlackKeyShadow(KeyTexture tex) { this->keyTextures.blackKeyShadowTex = tex;}
+void PianoKeyboard::SetBlackBlendKey(KeyTexture tex) { this->keyTextures.blackBlendKeyTex = tex; }
 
 std::map<int, Note> PianoKeyboard::GetNotesPlayed() { return this->notesPlayed; }
 
