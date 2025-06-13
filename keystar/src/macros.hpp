@@ -18,6 +18,9 @@
 #define ASSETS_IMAGES_PATH "assets/images/"
 
 // PIANO
+
+#define TOP_PIANO_GRADIENT_COLOR { 247, 247, 247, 255 }
+#define BOT_PIANO_GRADIENT_COLOR { 170, 173, 255, 255 }
 #define MIDI_NAME "KeyStar Output"
 #define PIANO_FOLDER_PATH "piano/"
 #define RWHITE_PATH "rwhite.png"
@@ -38,7 +41,8 @@
 
 // SCENE 1
 
-#define SCENE1_BACKGROUND "main_menu/4320p_background.png"
+#define SCENE1_FOLDER "main_menu/"
+#define SCENE1_BACKGROUND "background.png"
 
 #define CAT(a, b) \
     (a + std::string(b)).c_str()

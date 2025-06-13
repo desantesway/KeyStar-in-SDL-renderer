@@ -47,25 +47,99 @@ int PianoKeyboard::GetMidiinPort() { return this->midiinPort; }
 void PianoKeyboard::SetMidioutPort(int out) { this->midioutPort = out; }
 int  PianoKeyboard::GetMidioutPort() { return this->midioutPort; }
 
-void PianoKeyboard::DestroyTextures() {
-	SDL_DestroyTexture(this->keyTextures.rWhiteKeyTex.tex);
-	this->keyTextures.rWhiteKeyTex.tex = NULL;
-	SDL_DestroyTexture(this->keyTextures.lWhiteKeyTex.tex);
-	this->keyTextures.lWhiteKeyTex.tex = NULL;
-	SDL_DestroyTexture(this->keyTextures.midWhiteKeyTex.tex);
-	this->keyTextures.midWhiteKeyTex.tex = NULL;
-	SDL_DestroyTexture(this->keyTextures.roundWhiteKeyTex.tex);
-	this->keyTextures.roundWhiteKeyTex.tex = NULL;
-	SDL_DestroyTexture(this->keyTextures.blackKeyTex.tex);
-	this->keyTextures.blackKeyTex.tex = NULL;
-	SDL_DestroyTexture(this->keyTextures.blackKeyShadowTex.tex);
-	this->keyTextures.blackKeyShadowTex.tex = NULL;
-	SDL_DestroyTexture(this->keyTextures.blackBlendKeyTex.tex);
-	this->keyTextures.blackBlendKeyTex.tex = NULL;
+void deleteTuples(std::tuple<KeyTexture, KeyTexture>& tuple) {
+    SDL_DestroyTexture(std::get<0>(tuple).tex);
+    SDL_DestroyTexture(std::get<1>(tuple).tex);
+    tuple = std::make_tuple(KeyTexture{ NULL, "", 0, 0 }, KeyTexture{ NULL, "", 0, 0 }); // Reset the tuple to empty KeyTextures
 }
 
-KeyTexture PianoKeyboard::LoadKeyTex(KeyTexture key, SDL_Texture*& texture, std::string location) {
+void PianoKeyboard::DestroyTextures() {
+	deleteTuples(this->keyTextures.rWhiteKeyTex);
+	deleteTuples(this->keyTextures.lWhiteKeyTex);
+	deleteTuples(this->keyTextures.midWhiteKeyTex);
+	deleteTuples(this->keyTextures.roundWhiteKeyTex);
+	deleteTuples(this->keyTextures.blackKeyTex);
+
+	SDL_DestroyTexture(this->keyTextures.blackKeyShadowTex.tex);
+	this->keyTextures.blackKeyShadowTex.tex = NULL;
+}
+
+SDL_Texture* CreateGradientTexture(SDL_Renderer* renderer, int width, int height, SDL_Color top, SDL_Color bottom) {
+	SDL_Texture* texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, width, height);
+	SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+
+	// Set as render target
+	SDL_SetRenderTarget(renderer, texture);
+
+	// Clear to transparent
+	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+	SDL_RenderClear(renderer);
+
+	// Draw gradient
+	for (int y = 0; y < height; y++) {
+		float ratio = (float)y / height;
+		Uint8 r = top.r + (bottom.r - top.r) * ratio;
+		Uint8 g = top.g + (bottom.g - top.g) * ratio;
+		Uint8 b = top.b + (bottom.b - top.b) * ratio;
+		Uint8 a = top.a + (bottom.a - top.a) * ratio;
+
+		SDL_SetRenderDrawColor(renderer, r, g, b, a);
+		SDL_RenderLine(renderer, 0, y, width - 1, y);
+	}
+
+	// Reset render target
+	SDL_SetRenderTarget(renderer, NULL);
+
+	return texture;
+}
+
+SDL_Texture* MaskTexture(SDL_Renderer* renderer, SDL_Texture*& mask, SDL_Texture*& diffuse)
+{
+	SDL_Texture* result = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 300, 300);
+	SDL_SetTextureBlendMode(result, SDL_BLENDMODE_BLEND); // blend - mod - none - none
+	SDL_SetRenderTarget(renderer, result);
+	SDL_SetTextureBlendMode(mask, SDL_BLENDMODE_MOD);
+	SDL_SetTextureBlendMode(diffuse, SDL_BLENDMODE_NONE);
+	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0); SDL_RenderClear(renderer);
+	SDL_RenderTexture(renderer, diffuse, NULL, NULL);
+	SDL_RenderTexture(renderer, mask, NULL, NULL);
+	SDL_SetRenderTarget(renderer, NULL); SDL_SetRenderDrawColor(renderer, 0, 0, 255, 0);
+	SDL_RenderClear(renderer);
+	return result;
+}
+
+std::tuple<KeyTexture, KeyTexture> PianoKeyboard::LoadKeyTex(SDL_Renderer* renderer, SDL_Texture*& texture, std::string location) {
+    unsigned char buf[8];
+
+    std::ifstream in(location);
+    in.seekg(16);
+    in.read(reinterpret_cast<char*>(&buf), 8);
+
+    int h = (buf[4] << 24) + (buf[5] << 16) + (buf[6] << 8) + (buf[7] << 0);
+    int w = (buf[0] << 24) + (buf[1] << 16) + (buf[2] << 8) + (buf[3] << 0);
+
+    static SDL_Color topColor = TOP_PIANO_GRADIENT_COLOR;
+    static SDL_Color bottomColor = BOT_PIANO_GRADIENT_COLOR;
+
+    SDL_Texture* gradient = CreateGradientTexture(renderer, w, h, topColor, bottomColor);
+
+	SDL_Texture* pianoTexture = IMG_LoadTexture(renderer, StrToPtr(location));
+
+    SDL_Texture* blendedTexture = MaskTexture(renderer, gradient, texture);
+
+    SDL_DestroyTexture(gradient);
+	SDL_DestroyTexture(texture);
+
+	gradient = NULL;
+	texture = NULL;
+
+    return std::make_tuple(KeyTexture{ pianoTexture, location, h, w }, KeyTexture{ blendedTexture , location, h, w });
+}
+
+KeyTexture PianoKeyboard::LoadKeyTex(SDL_Texture*& texture, std::string location) {
 	
+	KeyTexture key;
+
 	key.location = location;
 
 	unsigned char buf[8];
@@ -81,21 +155,28 @@ KeyTexture PianoKeyboard::LoadKeyTex(KeyTexture key, SDL_Texture*& texture, std:
 	return key;
 }
 
-KeyTexture PianoKeyboard::GetRWhiteKey() { return this->keyTextures.rWhiteKeyTex; }
-KeyTexture PianoKeyboard::GetLWhiteKey() { return this->keyTextures.lWhiteKeyTex; }
-KeyTexture PianoKeyboard::GetMidWhiteKey() { return this->keyTextures.midWhiteKeyTex; }
-KeyTexture PianoKeyboard::GetRoundWhiteKey() { return this->keyTextures.roundWhiteKeyTex; }
-KeyTexture PianoKeyboard::GetBlackKey() { return this->keyTextures.blackKeyTex; }
-KeyTexture PianoKeyboard::GetBlackKeyShadow() { return this->keyTextures.blackKeyShadowTex; }
-KeyTexture PianoKeyboard::GetBlackBlendKey() { return this->keyTextures.blackBlendKeyTex; }
+KeyTexture GetKey(std::tuple<KeyTexture, KeyTexture> tuple, bool pos) {
+	if (pos) { 
+		return std::get<0>(tuple); 
+	}
+	else { 
+		return std::get<1>(tuple); 
+	}
+}
 
-void PianoKeyboard::SetRWhiteKey(KeyTexture tex) { this->keyTextures.rWhiteKeyTex = tex; }
-void PianoKeyboard::SetLWhiteKey(KeyTexture tex) { this->keyTextures.lWhiteKeyTex = tex; }
-void PianoKeyboard::SetMidWhiteKey(KeyTexture tex) { this->keyTextures.midWhiteKeyTex = tex; }
-void PianoKeyboard::SetRoundWhiteKey(KeyTexture tex) { this->keyTextures.roundWhiteKeyTex = tex;}
-void PianoKeyboard::SetBlackKey(KeyTexture tex) { this->keyTextures.blackKeyTex = tex;}
+KeyTexture PianoKeyboard::GetRWhiteKey(bool pos) { return GetKey(this->keyTextures.rWhiteKeyTex, pos); }
+KeyTexture PianoKeyboard::GetLWhiteKey(bool pos) { return GetKey(this->keyTextures.lWhiteKeyTex, pos); }
+KeyTexture PianoKeyboard::GetMidWhiteKey(bool pos) { return GetKey(this->keyTextures.midWhiteKeyTex, pos); }
+KeyTexture PianoKeyboard::GetRoundWhiteKey(bool pos) { return GetKey(this->keyTextures.roundWhiteKeyTex,pos);  }
+KeyTexture PianoKeyboard::GetBlackKey(bool pos) { return GetKey(this->keyTextures.blackKeyTex,pos);  }
+KeyTexture PianoKeyboard::GetBlackKeyShadow() { return this->keyTextures.blackKeyShadowTex; }
+
+void PianoKeyboard::SetRWhiteKey(std::tuple<KeyTexture, KeyTexture> tex) { this->keyTextures.rWhiteKeyTex = tex; }
+void PianoKeyboard::SetLWhiteKey(std::tuple<KeyTexture, KeyTexture> tex) { this->keyTextures.lWhiteKeyTex = tex; }
+void PianoKeyboard::SetMidWhiteKey(std::tuple<KeyTexture, KeyTexture> tex) { this->keyTextures.midWhiteKeyTex = tex; }
+void PianoKeyboard::SetRoundWhiteKey(std::tuple<KeyTexture, KeyTexture> tex) { this->keyTextures.roundWhiteKeyTex = tex;}
+void PianoKeyboard::SetBlackKey(std::tuple<KeyTexture, KeyTexture> tex) { this->keyTextures.blackKeyTex = tex;}
 void PianoKeyboard::SetBlackKeyShadow(KeyTexture tex) { this->keyTextures.blackKeyShadowTex = tex;}
-void PianoKeyboard::SetBlackBlendKey(KeyTexture tex) { this->keyTextures.blackBlendKeyTex = tex; }
 
 std::map<int, Note> PianoKeyboard::GetNotesPlayed() { return this->notesPlayed; }
 

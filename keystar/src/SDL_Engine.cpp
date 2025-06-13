@@ -476,7 +476,10 @@ bool SDL::Scene1() {
     if (!this->scene1->IsSceneLoaded()) {
 
         std::vector<TextureData> Textures;
-        Textures.push_back({ NULL, CAT(ASSETS_IMAGES_PATH, SCENE1_BACKGROUND), NULL, NULL});
+        Textures.push_back({ NULL, CAT(ASSETS_IMAGES_PATH, 
+            CAT(SCENE1_FOLDER,
+                CAT(
+                    CAT(std::to_string(GetHeight()), "p_") , SCENE1_BACKGROUND))), NULL, NULL});
 
         scene1->SetTextures(Textures);
         
@@ -499,40 +502,36 @@ bool SDL::LoadPianoTextures() {
                                         CAT(std::to_string(GetHeight()), "p_")
                                     )
                                   );
+
     std::string location = CAT(pianoFolderPath, RWHITE_PATH);
     pianoTexture = LoadTexture(pianoTexture, location);
     CHECK_RESULT(pianoTexture, "Error loading piano RWhiteKey texture: ");
-    this->piano->SetRWhiteKey(this->piano->LoadKeyTex(this->piano->GetRWhiteKey(), pianoTexture, location));
+    this->piano->SetRWhiteKey(this->piano->LoadKeyTex(renderer, pianoTexture, location));
 
     location = CAT(pianoFolderPath, LWHITE_PATH);
     pianoTexture = LoadTexture(pianoTexture, location);
     CHECK_RESULT(pianoTexture, "Error loading piano LWhiteKey texture: ");
-    this->piano->SetLWhiteKey(this->piano->LoadKeyTex(this->piano->GetLWhiteKey(), pianoTexture, location));
+    this->piano->SetLWhiteKey(this->piano->LoadKeyTex(renderer, pianoTexture, location));
 
     location = CAT(pianoFolderPath, WHITE_MID_PATH);
     pianoTexture = LoadTexture(pianoTexture, location);
     CHECK_RESULT(pianoTexture, "Error loading piano MidWhiteKey texture: ");
-    this->piano->SetMidWhiteKey(this->piano->LoadKeyTex(this->piano->GetMidWhiteKey(), pianoTexture, location));
+    this->piano->SetMidWhiteKey(this->piano->LoadKeyTex(renderer, pianoTexture, location));
 
     location = CAT(pianoFolderPath, WHITE_ROUNDMID_PATH);
     pianoTexture = LoadTexture(pianoTexture, location);
     CHECK_RESULT(pianoTexture, "Error loading piano RoundWhiteKey texture: ");
-    this->piano->SetRoundWhiteKey(this->piano->LoadKeyTex(this->piano->GetRoundWhiteKey(), pianoTexture, location));
+    this->piano->SetRoundWhiteKey(this->piano->LoadKeyTex(renderer, pianoTexture, location));
 
     location = CAT(pianoFolderPath, BLACK_KEY_PATH);
     pianoTexture = LoadTexture(pianoTexture, location);
     CHECK_RESULT(pianoTexture, "Error loading piano BlackKey texture: ");
-    this->piano->SetBlackKey(this->piano->LoadKeyTex(this->piano->GetBlackKey(), pianoTexture, location));
+    this->piano->SetBlackKey(this->piano->LoadKeyTex(renderer, pianoTexture, location));
 
     location = CAT(pianoFolderPath, BLACK_SHADOW_PATH);
     pianoTexture = LoadTexture(pianoTexture, location);
     CHECK_RESULT(pianoTexture, "Error loading piano BlackKeyShadow texture: ");
-    this->piano->SetBlackKeyShadow(this->piano->LoadKeyTex(this->piano->GetBlackKeyShadow(), pianoTexture, location));
-
-    location = CAT(pianoFolderPath, BLACK_BLEND_PATH);
-    pianoTexture = LoadTexture(pianoTexture, location);
-    CHECK_RESULT(pianoTexture, "Error loading piano BlackBlendKey texture: ");
-    this->piano->SetBlackBlendKey(this->piano->LoadKeyTex(this->piano->GetBlackBlendKey(), pianoTexture, location));
+    this->piano->SetBlackKeyShadow(this->piano->LoadKeyTex(pianoTexture, location));
 
     pianoTexture = NULL;
 
@@ -652,11 +651,8 @@ void SDL::Animate() {
 
 bool SDL::RenderPiano() {
     if (!activeScene->IsPiano()) return true;
-
-    // Pseudocode plan:
-    // 1. For 88 keys, ensure the piano starts at A0 (MIDI 21) and ends at C8 (MIDI 108).
-    // 2. For other key counts, center the keys around middle C (MIDI 60) as before.
-    // 3. Adjust start_key calculation to snap to A0 for 88 keys, otherwise use the old logic.
+    
+    // DO A 88 KEY SETTING
 
     int total_keys = this->piano->GetKeyNum();
     int full_octaves = total_keys / 12;
@@ -671,13 +667,13 @@ bool SDL::RenderPiano() {
     double height = static_cast<double>(GetHeight());
     double shadow_key_width = width / white_keys;
     double white_key_width = width / white_keys;
-    double white_key_height = this->piano->GetRoundWhiteKey().h;
+    double white_key_height = this->piano->GetRoundWhiteKey(true).h;
     double white_shadow_height = (height * (double)WHITE_SHADOW_HEIGHT) / ASSESTS_RES;
     double shadow_black_key_width = this->piano->GetBlackKeyShadow().w * 49 / piano->GetKeyNum();
     double shadow_black_key_height = this->piano->GetBlackKeyShadow().h;
     double wblack_height = ((height * (double)WHITEB_KEY_HEIGHT) / ASSESTS_RES) + white_shadow_height;
-    double black_key_width = this->piano->GetBlackKey().w * 49 / piano->GetKeyNum();
-    double black_key_height = this->piano->GetBlackKey().h;
+    double black_key_width = this->piano->GetBlackKey(true).w * 49 / piano->GetKeyNum();
+    double black_key_height = this->piano->GetBlackKey(true).h;
     double black_height = (height * (double)BLACK_SHADOW_HEIGHT) / ASSESTS_RES;
 
     SDL_SetRenderDrawColor(this->renderer, 229, 229, 229, 255);
@@ -701,26 +697,30 @@ bool SDL::RenderPiano() {
         bool pressed = this->piano->GetNotesPlayed()[key_pos].pressed; // make option for if they in pedal aka this->piano->GetNotesPlayed().count(key_pos) > 0 (on black keys too)
         float wx = static_cast<float>(i * white_key_width);
         float ww = (i == white_keys - 1) ? static_cast<float>(width - wx) : static_cast<float>(shadow_key_width);
-        SDL_Texture* white_key_texture =
-            (i == white_keys - 1) ? this->piano->GetRoundWhiteKey().tex :
-            (i % 7 == 0) ? this->piano->GetLWhiteKey().tex :
-            (i % 7 == 6) ? this->piano->GetRWhiteKey().tex :
-            this->piano->GetMidWhiteKey().tex;
-
+        
+        SDL_Texture* white_key_texture = NULL;
 		std::string key_name = CAT("Key", std::to_string(key_pos));
         if (pressed) {
 			StartAnimation(key_name, 0.025, AnimationCurve::EaseOut);
-            SDL_SetTextureColorMod(white_key_texture, GREEN);
+
+            white_key_texture =
+                (i == white_keys - 1) ? this->piano->GetRoundWhiteKey(false).tex :
+                (i % 7 == 0) ? this->piano->GetLWhiteKey(false).tex :
+                (i % 7 == 6) ? this->piano->GetRWhiteKey(false).tex :
+                this->piano->GetMidWhiteKey(false).tex;
         }
         else {
             ReverseAnimation(CAT("Key", std::to_string(key_pos)), AnimationCurve::EaseOutBounce);
-            SDL_SetTextureColorMod(white_key_texture, 255, 255, 255);
+            white_key_texture =
+                (i == white_keys - 1) ? this->piano->GetRoundWhiteKey(true).tex :
+                (i % 7 == 0) ? this->piano->GetLWhiteKey(true).tex :
+                (i % 7 == 6) ? this->piano->GetRWhiteKey(true).tex :
+                this->piano->GetMidWhiteKey(true).tex;
         }
         RenderTexture(white_key_texture, wx, height - white_key_height - white_shadow_height, ww, white_key_height +  white_shadow_height*AnimationState(key_name), false);
     }
     SDL_Texture* white_key_texture = NULL;
 
-    SDL_SetTextureColorMod(this->piano->GetBlackBlendKey().tex, GREEN);
     double mult = white_key_width - shadow_black_key_width * 0.5;
     // Pass 2: Black key shadows and black keys
     for (int i = 0; i < black_keys; ++i) {
@@ -747,10 +747,10 @@ bool SDL::RenderPiano() {
         std::string key_name = CAT("Key", std::to_string(key_pos));
         if (pressed) { // do a white version of the black 
             StartAnimation(key_name, 0.025, AnimationCurve::EaseOut);
-            black_key_texture = this->piano->GetBlackBlendKey().tex;
+            black_key_texture = this->piano->GetBlackKey(false).tex;
         } else {
             ReverseAnimation(CAT("Key", std::to_string(key_pos)), AnimationCurve::EaseOutBounce);
-            black_key_texture = this->piano->GetBlackKey().tex;
+            black_key_texture = this->piano->GetBlackKey(true).tex;
 		}
         
         RenderTexture(black_key_texture, bx, height - black_key_height - black_height - wblack_height , bw, black_key_height + black_height *1.03 * AnimationState(key_name), false);

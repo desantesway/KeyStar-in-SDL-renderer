@@ -1,8 +1,7 @@
 /* TODOS:
 * PRIORITY IN TEXTURE RENDERING - MIGHT NOT NEED, JUST IMPORT ON THE VECTOR BY CORRECT ORDER
 * HANDLE MOVING WINDOW
-* background different resolutions
-* better texture on pressed key
+* make better code organization - see what functions should be moved to a general niche class
 * PEDAL KEYS NOT ON TEXTURES
 * TRANSLATE KEY VELOCITY TO ANIMATION
 * SEPARAR ANIMATION TO A DIF FILE
@@ -13,6 +12,7 @@
 * IMPLEMENT MENU
 * IMPLEMENT SETTINGS
 * 9. IMPLEMENT SCREEN RESOLUTIONS + FULLSCREEN
+* 88 key setting
 * 9. ETC.
 */
 
@@ -21,7 +21,6 @@
 #define SDL_FLAGS SDL_INIT_VIDEO
 
 // This function initializes the SDL engine and all its resources.
-// SCENE SHOULD BE 1 IS LOADED HERE
 bool SDL_Init(SDL* sdl) {
 
     sdl->SetRunning(true);

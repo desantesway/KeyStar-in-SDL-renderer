@@ -18,13 +18,12 @@ struct KeyTexture
 };
 
 struct KeyTextures {
-	KeyTexture rWhiteKeyTex;
-	KeyTexture lWhiteKeyTex;
-	KeyTexture midWhiteKeyTex;
-	KeyTexture roundWhiteKeyTex;
-	KeyTexture blackKeyTex;
+	std::tuple <KeyTexture, KeyTexture> rWhiteKeyTex;
+	std::tuple <KeyTexture, KeyTexture> lWhiteKeyTex;
+	std::tuple <KeyTexture, KeyTexture> midWhiteKeyTex;
+	std::tuple <KeyTexture, KeyTexture> roundWhiteKeyTex;
+	std::tuple <KeyTexture, KeyTexture> blackKeyTex;
 	KeyTexture blackKeyShadowTex;
-	KeyTexture blackBlendKeyTex;
 };
 
 struct Note
@@ -55,22 +54,21 @@ public:
 	void SetMidioutPort(int out);
 	int GetMidioutPort();
 
-	KeyTexture LoadKeyTex(KeyTexture key, SDL_Texture*& texture, std::string location);
+	KeyTexture LoadKeyTex(SDL_Texture*& texture, std::string location);
+	std::tuple<KeyTexture, KeyTexture> LoadKeyTex(SDL_Renderer* renderer, SDL_Texture*& texture, std::string location);
 
-	KeyTexture GetRWhiteKey();
-	KeyTexture GetLWhiteKey();
-	KeyTexture GetMidWhiteKey();
-	KeyTexture GetRoundWhiteKey();
-	KeyTexture GetBlackKey();
+	KeyTexture GetRWhiteKey(bool pos);
+	KeyTexture GetLWhiteKey(bool pos);
+	KeyTexture GetMidWhiteKey(bool pos);
+	KeyTexture GetRoundWhiteKey(bool pos);
+	KeyTexture GetBlackKey(bool pos);
 	KeyTexture GetBlackKeyShadow();
-	KeyTexture GetBlackBlendKey();
-	void SetRWhiteKey(KeyTexture tex);
-	void SetLWhiteKey(KeyTexture tex);
-	void SetMidWhiteKey(KeyTexture tex);
-	void SetRoundWhiteKey(KeyTexture tex);
-	void SetBlackKey(KeyTexture tex);
+	void SetRWhiteKey(std::tuple<KeyTexture, KeyTexture> tex);
+	void SetLWhiteKey(std::tuple<KeyTexture, KeyTexture> tex);
+	void SetMidWhiteKey(std::tuple<KeyTexture, KeyTexture> tex);
+	void SetRoundWhiteKey(std::tuple<KeyTexture, KeyTexture> tex);
+	void SetBlackKey(std::tuple<KeyTexture, KeyTexture> tex);
 	void SetBlackKeyShadow(KeyTexture tex);
-	void SetBlackBlendKey(KeyTexture tex);
 
 	std::map<int, Note> GetNotesPlayed();
 	void RemoveNote(int key_pos);
