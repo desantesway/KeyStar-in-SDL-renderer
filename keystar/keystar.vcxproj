@@ -141,20 +141,24 @@
     <ClCompile Include="src\ChordRecognizer\chord.hpp" />
     <ClCompile Include="src\ChordRecognizer\chordnamer.cpp" />
     <ClCompile Include="src\ChordRecognizer\chord_db.hpp" />
-    <ClCompile Include="src\clock.hpp" />
-    <ClCompile Include="src\pianokeyboard.cpp" />
-    <ClCompile Include="src\pianokeyboard.hpp" />
-    <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\SDL_Engine.cpp" />
-    <ClCompile Include="src\scene.cpp" />
+    <ClCompile Include="src\Engine\Animations.cpp" />
+    <ClCompile Include="src\Engine\PerformanceBenchmark.cpp" />
+    <ClCompile Include="src\Engine\Scene.cpp" />
+    <ClCompile Include="src\Engine\SDL_Engine.cpp" />
+    <ClCompile Include="src\Game.cpp" />
+    <ClCompile Include="src\Keyboard\Pianokeyboard.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
-    <ClInclude Include="src\macros.hpp" />
-    <ClInclude Include="src\main.hpp" />
-    <ClInclude Include="src\libs.hpp" />
-    <ClInclude Include="src\SDL_Engine.hpp" />
-    <ClInclude Include="src\scene.hpp" />
+    <ClInclude Include="src\Engine\Animations.h" />
+    <ClInclude Include="src\Engine\Clock.h" />
+    <ClInclude Include="src\Engine\PerformanceBenchmark.h" />
+    <ClInclude Include="src\Engine\Scene.h" />
+    <ClInclude Include="src\Engine\SDL_Engine.h" />
+    <ClInclude Include="src\Game.hpp" />
+    <ClInclude Include="src\Keyboard\Pianokeyboard.h" />
+    <ClInclude Include="src\Utils\Libs.h" />
+    <ClInclude Include="src\Utils\Macros.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="rtmidi.dll" />
