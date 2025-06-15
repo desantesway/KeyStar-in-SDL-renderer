@@ -1,9 +1,8 @@
 /* TODOS:
 * PRIORITY IN TEXTURE RENDERING - MIGHT NOT NEED, JUST IMPORT ON THE VECTOR BY CORRECT ORDER
 * HANDLE MOVING WINDOW
-* make better code organization - see what functions should be moved to a general niche class
-* PEDAL KEYS NOT ON TEXTURES
 * TRANSLATE KEY VELOCITY TO ANIMATION
+* PEDAL KEYS NOT ON TEXTURES
 * SEPARAR ANIMATION TO A DIF FILE
 * PEDAL ANIMATION
 * KEY NAME ON PRESSED KEYS
@@ -16,7 +15,7 @@
 * 9. ETC.
 */
 
-#include "Game.hpp" 
+#include "Game.h" 
 
 #define SDL_FLAGS SDL_INIT_VIDEO
 

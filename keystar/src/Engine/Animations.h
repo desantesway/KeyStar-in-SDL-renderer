@@ -20,11 +20,13 @@ public:
 
     void StartAnimation(std::string name, double duration, AnimationCurve curve);
     void ReverseAnimation(std::string name, AnimationCurve curve);
-    double ApplyCurve(double t, AnimationCurve curve);
+    
     float AnimationState(std::string name);
     void Animate(float delta);
 
 private:
+
+    double ApplyCurve(double t, AnimationCurve curve);
 
     struct Animation {
         bool direction; // true for forward, false for reverse

@@ -8,6 +8,9 @@
 #include <vector>
 #include "RtMidi.h"
 #include "../ChordRecognizer/chordnamer.cpp"
+#include "../Engine/SDL_Textures.h"
+#include "../Engine/Animations.h"
+#include "../Engine/Shaders/Shaders.h"
 
 struct KeyTexture
 {
@@ -54,8 +57,15 @@ public:
 	void SetMidioutPort(int out);
 	int GetMidioutPort();
 
-	KeyTexture LoadKeyTex(SDL_Texture*& texture, std::string location);
-	std::tuple<KeyTexture, KeyTexture> LoadKeyTex(SDL_Renderer* renderer, SDL_Texture*& texture, std::string location);
+	bool StartMidi();
+
+	void DetectKeys();
+
+	bool LoadPianoTextures(SDL_Renderer* renderer, int height);
+	bool RenderPiano(SDL_Renderer* renderer, Animations* animations, bool isPiano, int width, int height);
+	bool ChordsText(SDL_Renderer* renderer, Scene* scene, TTF_Font* font);
+
+private:
 
 	KeyTexture GetRWhiteKey(bool pos);
 	KeyTexture GetLWhiteKey(bool pos);
@@ -78,20 +88,20 @@ public:
 	void DisplayInPorts();
 	void DisplayOutPorts();
 
-	bool StartMidi();
-
 	bool StartMidiIn();
 	bool StartMidiOut();
 	void StopMidiIn();
-	void StopMidiOut();	
+	void StopMidiOut();
 
 	void SetPedalNotes();
 	void RemovePedalNotes();
-	void DetectKeys();
 
 	std::string GetChordPlayed();
 
-private:
+	KeyTexture LoadKeyTex(SDL_Texture*& texture, std::string location);
+	std::tuple<KeyTexture, KeyTexture> LoadKeyTex(SDL_Renderer* renderer, SDL_Texture*& texture, std::string location);
+
+	// variables
 
 	int octave;
 	int keyNum;

@@ -145,6 +145,10 @@
     <ClCompile Include="src\Engine\PerformanceBenchmark.cpp" />
     <ClCompile Include="src\Engine\Scene.cpp" />
     <ClCompile Include="src\Engine\SDL_Engine.cpp" />
+    <ClCompile Include="src\Engine\SDL_Textures.cpp" />
+    <ClCompile Include="src\Engine\Settings\Window.cpp" />
+    <ClCompile Include="src\Engine\Shaders\Rects.cpp" />
+    <ClCompile Include="src\Engine\Shaders\Shaders.cpp" />
     <ClCompile Include="src\Game.cpp" />
     <ClCompile Include="src\Keyboard\Pianokeyboard.cpp" />
   </ItemGroup>
@@ -155,7 +159,12 @@
     <ClInclude Include="src\Engine\PerformanceBenchmark.h" />
     <ClInclude Include="src\Engine\Scene.h" />
     <ClInclude Include="src\Engine\SDL_Engine.h" />
-    <ClInclude Include="src\Game.hpp" />
+    <ClInclude Include="src\Engine\SDL_Textures.h" />
+    <ClInclude Include="src\Engine\Settings\Settings.h" />
+    <ClInclude Include="src\Engine\Settings\Window.h" />
+    <ClInclude Include="src\Engine\Shaders\Rects.h" />
+    <ClInclude Include="src\Engine\Shaders\Shaders.h" />
+    <ClInclude Include="src\Game.h" />
     <ClInclude Include="src\Keyboard\Pianokeyboard.h" />
     <ClInclude Include="src\Utils\Libs.h" />
     <ClInclude Include="src\Utils\Macros.h" />
