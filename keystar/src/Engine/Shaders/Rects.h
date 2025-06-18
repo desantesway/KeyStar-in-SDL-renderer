@@ -4,6 +4,7 @@
 #include "../../Utils/Libs.h"
 
 SDL_FRect* GenerateFRect(float x, float y, float w, float h);
-SDL_Texture* GenerateGradientTexture(SDL_Renderer* renderer, int width, int height, SDL_Color top, SDL_Color bottom);
+SDL_Texture* GenerateGradientTexture(SDL_Renderer* renderer, int width, int height,
+    SDL_Color top, SDL_Color bottom, float middlePosition);
 
 #endif

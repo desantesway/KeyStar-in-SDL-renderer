@@ -40,7 +40,7 @@ void SDL_Free(SDL* sdl) {
 void SDL_Run(SDL* sdl) {
 
     while (sdl->IsRunning()) {
-		float startTime = (float)SDL_GetTicks();
+        Uint64 startTime = SDL_GetTicks();
 
         sdl->Simulation();
 
@@ -50,10 +50,10 @@ void SDL_Run(SDL* sdl) {
 
         sdl->RenderFrame();
 
-        float FTime = SDL_GetTicks() - startTime; 
+        Uint64 FTime = SDL_GetTicks() - startTime; 
 
 		if (1000.0f / sdl->GetMaxFPS() > FTime) {
-			SDL_Delay((1000.0f / sdl->GetMaxFPS()) - FTime);  // Delay to maintain the desired frame rate
+            SDL_Delay(static_cast<Uint32>((1000.0f / sdl->GetMaxFPS()) - FTime));  // Delay to maintain the desired frame rate  // Delay to maintain the desired frame rate
 		}
     }
 

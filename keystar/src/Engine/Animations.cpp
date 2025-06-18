@@ -21,7 +21,7 @@ void Animations::StartAnimation(std::string name, double duration, Animations::A
 }
 
 // returns the state of an animation
-float Animations::AnimationState(std::string name) {
+double Animations::AnimationState(std::string name) {
     if (animationStates.count(name)) {
         return animationStates[name].progress;
     }

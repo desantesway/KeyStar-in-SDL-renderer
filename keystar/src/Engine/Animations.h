@@ -21,7 +21,7 @@ public:
     void StartAnimation(std::string name, double duration, AnimationCurve curve);
     void ReverseAnimation(std::string name, AnimationCurve curve);
     
-    float AnimationState(std::string name);
+    double AnimationState(std::string name);
     void Animate(float delta);
 
 private:

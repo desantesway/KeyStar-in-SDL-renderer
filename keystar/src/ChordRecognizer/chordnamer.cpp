@@ -45,7 +45,7 @@ inline void insert_chords(const unsigned short root, const std::set<unsigned sho
             std::back_inserter(candidate.omitted_tones));
         std::set_difference(intervals.begin(), intervals.end(), notes.begin(), notes.end(),
             std::back_inserter(candidate.extra_tones));
-        candidate.num_accidentals = candidate.extra_tones.size() + candidate.omitted_tones.size();
+        candidate.num_accidentals = static_cast<unsigned>(candidate.extra_tones.size()) + static_cast<unsigned>(candidate.omitted_tones.size());
 
         int score = score_chord(candidate);
         candidates.emplace_back(candidate, score);

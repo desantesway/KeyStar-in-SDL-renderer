@@ -45,13 +45,13 @@ public:
 private:  
 	bool isPianoOn;
 
-	std::vector<TextureData> loadTextures; 
+	std::vector<TextureData> offlineTextures; 
 
 	bool textureLoaded;
 	bool sceneLoaded;
 
 	bool detectKeys;
-	SDL_Texture* chordReconTex;
+	SDL_Texture* chordReconTex; // had to be separate cuz of the constant changing of the texture in the scene
 };
 
 #endif

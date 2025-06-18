@@ -14,10 +14,18 @@
 
 struct KeyTexture
 {
+    SDL_Texture* tex;
+    std::string location;
+    int h;
+    int w;
+
+};
+
+struct Glow {
 	SDL_Texture* tex;
-	std::string location;
-	int h;
-	int w;
+	float h;
+	float w;
+
 };
 
 struct KeyTextures {
@@ -61,7 +69,7 @@ public:
 
 	void DetectKeys();
 
-	bool LoadPianoTextures(SDL_Renderer* renderer, int height);
+	bool LoadPianoTextures(SDL_Renderer* renderer, int width, int height);
 	bool RenderPiano(SDL_Renderer* renderer, Animations* animations, bool isPiano, int width, int height);
 	bool ChordsText(SDL_Renderer* renderer, Scene* scene, TTF_Font* font);
 
@@ -79,6 +87,9 @@ private:
 	void SetRoundWhiteKey(std::tuple<KeyTexture, KeyTexture> tex);
 	void SetBlackKey(std::tuple<KeyTexture, KeyTexture> tex);
 	void SetBlackKeyShadow(KeyTexture tex);
+
+	Glow GetGlow();
+	void SetGlowTexture(SDL_Texture* texture);
 
 	std::map<int, Note> GetNotesPlayed();
 	void RemoveNote(int key_pos);
@@ -114,6 +125,7 @@ private:
 	RtMidiOut* midiout;
 
 	KeyTextures keyTextures;
+	Glow glow;
 
 	std::map<int, Note> notesPlayed;
 	bool notesUpdated;

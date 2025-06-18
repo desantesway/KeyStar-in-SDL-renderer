@@ -20,7 +20,6 @@ Scene* MainMenu(std::vector<Scene*>* scenes, int height) {
 
         scenes->at(1)->SetTextures(Textures);
 
-
         scenes->at(1)->SetPiano(true);
         scenes->at(1)->SetSceneLoaded(true);
 

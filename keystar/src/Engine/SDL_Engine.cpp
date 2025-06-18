@@ -106,7 +106,7 @@ bool SDL::Init()
 
 	CHECK_RESULT(this->piano, "Couldn't create midi: ");
 	CHECK_RESULT(this->piano->StartMidi(), "Couldn't start midi: ");
-    CHECK_RESULT(this->piano->LoadPianoTextures(this->GetRenderer(),this->windowSettings.GetHeight()), "Error loading piano textures: ");
+    CHECK_RESULT(this->piano->LoadPianoTextures(this->GetRenderer(), this->windowSettings.GetWidth(),this->windowSettings.GetHeight()), "Error loading piano textures: ");
 
     // icon of the program - only is runned once and then freed
     //SDL_Surface* icon_surface = IMG_Load(CAT(ASSETS_IMAGES_PATH,ICON_PATH));
@@ -236,7 +236,7 @@ bool SDL::Scenes() {
 
     if (this->scenes.size() > 1) {
         RenderScene(this->GetRenderer(), scenes.at(0));
-        this->piano->ChordsText(this->GetRenderer(), this->GetActiveScene(), this->mainFont); // send this to scene
+        this->piano->ChordsText(this->GetRenderer(), this->GetActiveScene(), this->mainFont);
     }
     else {
         StartScene(this->GetRenderer(), MainMenu(&this->scenes, this->windowSettings.GetHeight()));

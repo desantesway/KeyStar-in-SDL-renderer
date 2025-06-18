@@ -10,32 +10,54 @@ SDL_FRect* GenerateFRect(float x, float y, float w, float h) {
     return rect;
 }
 
-// Function to generate an SDL_Rect with given dimensions and colors
-SDL_Texture* GenerateGradientTexture(SDL_Renderer* renderer, int width, int height, SDL_Color top, SDL_Color bottom) {
-	SDL_Texture* texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, width, height);
-	SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+SDL_Texture* GenerateGradientTexture(SDL_Renderer* renderer, int width, int height,
+    SDL_Color top, SDL_Color bottom, float middlePosition = 0.5f) {
+    // Clamp middle position between 0.0 and 1.0
+    middlePosition = SDL_clamp(middlePosition, 0.0f, 1.0f);
 
-	// Set as render target
-	SDL_SetRenderTarget(renderer, texture);
+    SDL_Texture* texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
+        SDL_TEXTUREACCESS_TARGET, width, height);
+    SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
 
-	// Clear to transparent
-	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-	SDL_RenderClear(renderer);
+    // Set as render target
+    SDL_SetRenderTarget(renderer, texture);
 
-	// Draw gradient
-	for (int y = 0; y < height; y++) {
-		float ratio = (float)y / height;
-		Uint8 r = top.r + (bottom.r - top.r) * ratio;
-		Uint8 g = top.g + (bottom.g - top.g) * ratio;
-		Uint8 b = top.b + (bottom.b - top.b) * ratio;
-		Uint8 a = top.a + (bottom.a - top.a) * ratio;
+    // Clear to transparent
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+    SDL_RenderClear(renderer);
 
-		SDL_SetRenderDrawColor(renderer, r, g, b, a);
-		SDL_RenderLine(renderer, 0, y, width - 1, y);
-	}
+    // Draw gradient
+    for (int y = 0; y < height; y++) {
+        float normalizedY = (float)y / height;
+        float ratio;
 
-	// Reset render target
-	SDL_SetRenderTarget(renderer, NULL);
+        if (middlePosition <= 0.0f) {
+            ratio = (normalizedY >= 0.0f) ? 1.0f : 0.0f;
+        }
+        else if (middlePosition >= 1.0f) {
+            ratio = (normalizedY >= 1.0f) ? 1.0f : 0.0f;
+        }
+        else {
+            // Calculate ratio based on middle position
+            if (normalizedY <= middlePosition) {
+                ratio = 0.5f * (normalizedY / middlePosition);
+            }
+            else {
+                ratio = 0.5f + 0.5f * ((normalizedY - middlePosition) / (1.0f - middlePosition));
+            }
+        }
 
-	return texture;
+        Uint8 r = static_cast<Uint8>(top.r + (bottom.r - top.r) * ratio);
+        Uint8 g = static_cast<Uint8>(top.g + (bottom.g - top.g) * ratio);
+        Uint8 b = static_cast<Uint8>(top.b + (bottom.b - top.b) * ratio);
+        Uint8 a = static_cast<Uint8>(top.a + (bottom.a - top.a) * ratio);
+
+        SDL_SetRenderDrawColor(renderer, r, g, b, a);
+        SDL_RenderLine(renderer, 0.0f, static_cast<float>(y), static_cast<float>(width - 1), static_cast<float>(y));
+    }
+
+    // Reset render target
+    SDL_SetRenderTarget(renderer, NULL);
+
+    return texture;
 }
