@@ -1,5 +1,6 @@
 #include "Shaders.h"
 
+// it masks the texture of mask to the format of diffuse
 SDL_Texture* MaskTexture(SDL_Renderer* renderer, SDL_Texture*& mask, SDL_Texture*& diffuse)
 {
 	SDL_Texture* result = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 300, 300);

@@ -109,11 +109,10 @@ bool SDL::Init()
     CHECK_RESULT(this->piano->LoadPianoTextures(this->GetRenderer(),this->windowSettings.GetHeight()), "Error loading piano textures: ");
 
     // icon of the program - only is runned once and then freed
-    SDL_Surface* icon_surface = IMG_Load(CAT(ASSETS_IMAGES_PATH,ICON_PATH));
-    CHECK_RESULT(icon_surface, "Couldn't load icon surface: ");
-    CHECK_RESULT(SDL_SetWindowIcon(GetWindow(), icon_surface), "Couldn't set window icon: ", SDL_DestroySurface(icon_surface));
-
-    SDL_DestroySurface(icon_surface);
+    //SDL_Surface* icon_surface = IMG_Load(CAT(ASSETS_IMAGES_PATH,ICON_PATH));
+    //CHECK_RESULT(icon_surface, "Couldn't load icon surface: ");
+    //CHECK_RESULT(SDL_SetWindowIcon(GetWindow(), icon_surface), "Couldn't set window icon: ", SDL_DestroySurface(icon_surface));
+    //SDL_DestroySurface(icon_surface);
 
     // main font
 	this->mainFont = TTF_OpenFont(CAT(FONT_PATH, MAIN_FONT_PATH), MAIN_FONT_SIZE);
@@ -122,6 +121,7 @@ bool SDL::Init()
     return true;
 }
 
+// This function is called to start the simulation of the game (calculations etc)
 bool SDL::Simulation() {
     clock.tick();
 
@@ -138,6 +138,7 @@ bool SDL::Simulation() {
     return true;
 }
 
+// This function is called to render the game to the screen.
 bool SDL::Rendering() {
     Scenes();
 
@@ -180,7 +181,7 @@ bool SDL::UpdateScreen() {
 // This function handles the events of the game.
 void SDL::GameEvents() {
     static SDL_Event event; 
-    if (this->scenes.size() > 1) {
+    if (this->scenes.size() > 1) { // midi keys
         if (this->scenes.at(0)->IsPiano()) {
             this->piano->DetectKeys();
         }
@@ -234,61 +235,14 @@ bool SDL::ScenesSimulation() {
 bool SDL::Scenes() {
 
     if (this->scenes.size() > 1) {
-        this->RenderScene(scenes.at(0));
+        RenderScene(this->GetRenderer(), scenes.at(0));
+        this->piano->ChordsText(this->GetRenderer(), this->GetActiveScene(), this->mainFont); // send this to scene
     }
     else {
-        this->Scene1();
+        StartScene(this->GetRenderer(), MainMenu(&this->scenes, this->windowSettings.GetHeight()));
         SetActiveScene(this->scenes.at(1));
         this->scenes.at(0)->SetDetectKeys(true);
         this->piano->ChordsText(this->GetRenderer(), this->GetActiveScene(), this->mainFont);
-    }
-
-    return true;
-}
-
-// This function renders the scene to the screen.
-bool SDL::RenderScene(Scene* scene) {
-    
-	RenderTextures(this->GetRenderer(), scene->GetTextures());
-
-    return true;
-}
-
-// This function starts the scene and loads all the media needed.
-// Expand this function if added surfaces and etc
-bool SDL::StartScene(Scene* scene) {
-
-    if (!scene->IsTextureLoaded()) {
-        LoadTextures(this->GetRenderer(), scene);
-        scene->SetTextureLoaded(true);
-    }
-    
-    return true;
-}
-
-// This function is the first scene presented to the user.
-bool SDL::Scene1() {
-
-    this->scenes.push_back(new Scene());
-    if (this->scenes.size() == 1) {
-        this->scenes.push_back(this->scenes.at(0));
-    }
-
-    if (!this->scenes.at(1)->IsSceneLoaded()) {
-
-        std::vector<TextureData> Textures;
-        Textures.push_back({ NULL, CAT(ASSETS_IMAGES_PATH, 
-            CAT(SCENE1_FOLDER,
-                CAT(
-                    CAT(std::to_string(windowSettings.GetHeight()), "p_") , SCENE1_BACKGROUND))), NULL, NULL});
-
-        scenes.at(1)->SetTextures(Textures);
-        
-        StartScene(scenes.at(1));
-
-		this->scenes.at(1)->SetPiano(true);
-        this->scenes.at(1)->SetSceneLoaded(true);
-        
     }
 
     return true;

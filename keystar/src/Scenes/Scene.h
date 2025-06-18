@@ -2,6 +2,7 @@
 #define SCENE_H
 
 #include "../Utils/Libs.h"  
+#include "../Utils/Macros.h" 
 
 // struct for all the info need for a texture
 struct TextureData  
@@ -38,6 +39,8 @@ public:
    void SetTextures(std::vector<TextureData> textures);
 
    bool FreeTextures();  
+
+   //bool StartScene(SDL_Renderer* renderer);
 
 private:  
 	bool isPianoOn;

@@ -18,12 +18,14 @@ void PerfBench::SetFPS(float fps) { this->fps = fps; }
 float PerfBench::GetFPS() { return this->fps; }
 float PerfBench::GetMaxFPS() { return this->maxfps; }
 
+// calcutes every benchmark in the background
 void PerfBench::BenchmarkSimulation() {
     if (GetFPS() != -1.0f) {
         CalculateFPS();
     }
 }
 
+// This function renders the benchmarks
 void PerfBench::BenchmarkRendering(SDL_Renderer* renderer, TTF_Font* mainFont) {
     if (GetFPS() != -1.0f) {
         FPS(renderer, mainFont);
@@ -36,7 +38,7 @@ void PerfBench::BenchmarkRendering(SDL_Renderer* renderer, TTF_Font* mainFont) {
     }
 }
 
-// This function sets, show and calculates the FPS of the program.
+// This function sets and shows the FPS of the program.
 void PerfBench::FPS(SDL_Renderer* renderer, TTF_Font* mainFont) {
     
         static int frameCount = 0;

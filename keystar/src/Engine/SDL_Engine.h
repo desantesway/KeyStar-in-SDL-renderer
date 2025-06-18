@@ -1,12 +1,13 @@
 #ifndef SDL_H
 #define SDL_H
 
-#include "Scene.h"
 #include "../Keyboard/pianokeyboard.h"
 #include "Animations.h"
 #include "PerformanceBenchmark.h"
 #include "Clock.h"
 #include "SDL_Textures.h"
+#include "../Scenes/Scene.h"
+#include "../Scenes/Menus.h"
 #include "Settings/Settings.h"
 #include <unordered_map>
 #include <algorithm>
@@ -53,13 +54,6 @@ private:
 
     bool ScenesSimulation();
     bool Scenes();
-
-    bool StartScene(Scene* scene);
-
-    bool RenderScene(Scene* scene);
-
-    // Use only for the initialization of the program
-    bool Scene1();
 
 	// variables
     SDL_Window* window;

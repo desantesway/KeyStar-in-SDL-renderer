@@ -12,13 +12,15 @@ Animations::Animations() {
 
 }
 
+// Start an animation with a name, duration, and curve type
 void Animations::StartAnimation(std::string name, double duration, Animations::AnimationCurve curve) {
     if (!animationStates.count(name)) {
-        animationStates.insert({ name, { true, duration, 0.0, 0.0, false, curve} });
+        animationStates.insert({ name, { true, duration, 0.0, 0.0, false, curve} }); // (name -> direction, duration, progress, elapsed, finished, curve)
     }
 
 }
 
+// returns the state of an animation
 float Animations::AnimationState(std::string name) {
     if (animationStates.count(name)) {
         return animationStates[name].progress;
@@ -29,6 +31,7 @@ float Animations::AnimationState(std::string name) {
     return 0;
 }
 
+// reverse an existing animation
 void Animations::ReverseAnimation(std::string name, Animations::AnimationCurve curve) {
     if (animationStates.count(name) && !(count(reversedAnimations.begin(), reversedAnimations.end(), name) > 0)) {
         Animation& original = animationStates[name];
@@ -53,7 +56,7 @@ void Animations::ReverseAnimation(std::string name, Animations::AnimationCurve c
     }
 }
 
-// 2. Helper function to apply the animation curve
+// Helper function to apply the animation curve
 double Animations::ApplyCurve(double t, Animations::AnimationCurve curve) {
     switch (curve) {
     case Animations::AnimationCurve::EaseIn:
@@ -89,7 +92,7 @@ double Animations::ApplyCurve(double t, Animations::AnimationCurve curve) {
     }
 }
 
-// 3. Modify Animate() to use the curve
+// animates all animations based on their elapsed time and curve
 void Animations::Animate(float delta) {
     std::map<std::string, Animation> updatedAnimations;
 

@@ -19,8 +19,10 @@
 
 // PIANO
 
-#define TOP_PIANO_GRADIENT_COLOR { 247, 247, 247, 255 }
-#define BOT_PIANO_GRADIENT_COLOR { 170, 173, 255, 255 }
+#define WTOP_PIANO_GRADIENT_COLOR { 247, 247, 247, 255 }
+#define WBOT_PIANO_GRADIENT_COLOR { 78, 138, 255, 255 }
+#define BTOP_PIANO_GRADIENT_COLOR { 75, 75, 75, 255 }
+#define BBOT_PIANO_GRADIENT_COLOR { 0, 124, 255, 255 }
 #define MIDI_NAME "KeyStar Output"
 #define PIANO_FOLDER_PATH "piano/"
 #define RWHITE_PATH "rwhite.png"
@@ -37,11 +39,10 @@
 #define BLACK_SHADOW_HEIGHT (96.0) // getting when the black key height starts
 #define WHITEB_KEY_HEIGHT (290.0) // getting when the black shadow key height starts
 
-// DEBUG/RELEASE
-
 // SCENE 1
 
 #define SCENE1_FOLDER "main_menu/"
+#define SCENE1_BACKGROUND_FOLDER "background/"
 #define SCENE1_BACKGROUND "background.png"
 
 #define CAT(a, b) \

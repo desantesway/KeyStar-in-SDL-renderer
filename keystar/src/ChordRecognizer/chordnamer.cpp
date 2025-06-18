@@ -27,6 +27,7 @@ inline int score_chord(const Chord& chord) {
     return score;
 }
 
+// Insert chords into the result set based on the root and intervals
 inline void insert_chords(const unsigned short root, const std::set<unsigned short>& intervals,
     std::multiset<Chord>& res) {
     std::vector<std::pair<Chord, int>> candidates;
@@ -63,10 +64,12 @@ inline void insert_chords(const unsigned short root, const std::set<unsigned sho
     }
 }
 
+// Calculate the distance between two notes in semitones, wrapping around at 12
 inline unsigned short get_note_distance(unsigned short root, unsigned short other) {
     return (other + 12 - root) % 12;
 }
 
+// Name the chord based on the given indices of notes
 inline std::multiset<Chord> name_that_chord(const std::vector<size_t>& indices) {
     std::set<unsigned short> notes;
     for (auto index : indices) {

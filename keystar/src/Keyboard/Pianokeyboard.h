@@ -99,7 +99,7 @@ private:
 	std::string GetChordPlayed();
 
 	KeyTexture LoadKeyTex(SDL_Texture*& texture, std::string location);
-	std::tuple<KeyTexture, KeyTexture> LoadKeyTex(SDL_Renderer* renderer, SDL_Texture*& texture, std::string location);
+	std::tuple<KeyTexture, KeyTexture> LoadKeyTex(SDL_Renderer* renderer, SDL_Texture*& texture, std::string location, bool key_type);
 
 	// variables
 

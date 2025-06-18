@@ -1,5 +1,6 @@
 #include "Rects.h"
 
+// Function to generate an SDL_Rect with given dimensions
 SDL_FRect* GenerateFRect(float x, float y, float w, float h) {
     SDL_FRect* rect = new SDL_FRect();
     rect->x = x;
@@ -9,6 +10,7 @@ SDL_FRect* GenerateFRect(float x, float y, float w, float h) {
     return rect;
 }
 
+// Function to generate an SDL_Rect with given dimensions and colors
 SDL_Texture* GenerateGradientTexture(SDL_Renderer* renderer, int width, int height, SDL_Color top, SDL_Color bottom) {
 	SDL_Texture* texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, width, height);
 	SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);

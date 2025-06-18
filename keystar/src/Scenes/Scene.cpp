@@ -49,6 +49,7 @@ void Scene::SetDetectKeys(bool bl) {
     this->detectKeys = bl;
 }
 
+// This function returns the chord detected in texture -- change this
 SDL_Texture* Scene::GetChordReconTex() {
     return this->chordReconTex;
 }
@@ -67,7 +68,7 @@ void Scene::SetTextures(std::vector<TextureData> textures)
     this->loadTextures = textures;
 }
 
-// This function frees the textures of the scene 
+// This function frees every texture of the scene 
 bool Scene::FreeTextures() {
     for (TextureData& textureData : GetTextures()) {
         if (textureData.texture) {

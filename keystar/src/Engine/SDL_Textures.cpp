@@ -1,6 +1,7 @@
 
 #include "SDL_Textures.h"
 
+// This function renders the texture to the screen.
 bool RenderTexture(SDL_Renderer* renderer, SDL_Texture* texture) {
 
     CHECK_RESULT(SDL_RenderTexture(renderer, texture, NULL, NULL), "Error rendering texture f2: ");
@@ -8,6 +9,7 @@ bool RenderTexture(SDL_Renderer* renderer, SDL_Texture* texture) {
     return true;
 }
 
+// This function renders the texture to the screen given only one rectangle.
 bool RenderTexture(SDL_Renderer* renderer, SDL_Texture* texture, float x1, float y1, float w1, float h1,
     bool rect) {
 
@@ -39,6 +41,7 @@ bool RenderTexture(SDL_Renderer* renderer, SDL_Texture* texture, SDL_FRect* rect
     return true;
 }
 
+// This function renders the texture to the screen given both rectangles.
 bool RenderTexture(SDL_Renderer* renderer, SDL_Texture* texture, float x1, float y1, float w1, float h1,
     float x2, float y2, float w2, float h2) {
 
@@ -104,5 +107,29 @@ bool LoadTextures(SDL_Renderer* renderer, Scene* scene) {
     }
 
     scene->SetTextures(new_textures);
+    return true;
+}
+
+
+// This function starts the scene and loads all the media needed.
+// Expand this function if added surfaces and etc
+bool StartScene(SDL_Renderer* renderer, Scene* scene) {
+
+    if (scene) {
+        if (!scene->IsTextureLoaded()) {
+            LoadTextures(renderer, scene);
+            scene->SetTextureLoaded(true);
+        }
+    }
+    
+
+    return true;
+}
+
+// This function renders the scene to the screen.
+bool RenderScene(SDL_Renderer* renderer, Scene* scene) {
+
+    RenderTextures(renderer, scene->GetTextures());
+
     return true;
 }

@@ -47,12 +47,14 @@ int PianoKeyboard::GetMidiinPort() { return this->midiinPort; }
 void PianoKeyboard::SetMidioutPort(int out) { this->midioutPort = out; }
 int  PianoKeyboard::GetMidioutPort() { return this->midioutPort; }
 
+// destroys the textures in the tuple and resets them to empty KeyTextures
 void deleteTuples(std::tuple<KeyTexture, KeyTexture>& tuple) {
     SDL_DestroyTexture(std::get<0>(tuple).tex);
     SDL_DestroyTexture(std::get<1>(tuple).tex);
     tuple = std::make_tuple(KeyTexture{ NULL, "", 0, 0 }, KeyTexture{ NULL, "", 0, 0 }); // Reset the tuple to empty KeyTextures
 }
 
+// Destroys all textures in the keyTextures struct and resets them to empty KeyTextures
 void PianoKeyboard::DestroyTextures() {
 	deleteTuples(this->keyTextures.rWhiteKeyTex);
 	deleteTuples(this->keyTextures.lWhiteKeyTex);
@@ -64,7 +66,8 @@ void PianoKeyboard::DestroyTextures() {
 	this->keyTextures.blackKeyShadowTex.tex = NULL;
 }
 
-std::tuple<KeyTexture, KeyTexture> PianoKeyboard::LoadKeyTex(SDL_Renderer* renderer, SDL_Texture*& texture, std::string location) {
+// Loads a texture from a file and returns it as a KeyTexture tuple with the gradient applied (for when pressed)
+std::tuple<KeyTexture, KeyTexture> PianoKeyboard::LoadKeyTex(SDL_Renderer* renderer, SDL_Texture*& texture, std::string location, bool key_type) {
     unsigned char buf[8];
 
     std::ifstream in(location);
@@ -74,12 +77,20 @@ std::tuple<KeyTexture, KeyTexture> PianoKeyboard::LoadKeyTex(SDL_Renderer* rende
     int h = (buf[4] << 24) + (buf[5] << 16) + (buf[6] << 8) + (buf[7] << 0);
     int w = (buf[0] << 24) + (buf[1] << 16) + (buf[2] << 8) + (buf[3] << 0);
 
-    static SDL_Color topColor = TOP_PIANO_GRADIENT_COLOR;
-    static SDL_Color bottomColor = BOT_PIANO_GRADIENT_COLOR;
+	SDL_Texture* pianoTexture = IMG_LoadTexture(renderer, StrToPtr(location));
+
+	SDL_Color topColor, bottomColor;
+
+	if (key_type) { // if white else black
+		topColor = WTOP_PIANO_GRADIENT_COLOR;
+		bottomColor = WBOT_PIANO_GRADIENT_COLOR;
+	}
+	else {
+		topColor = BTOP_PIANO_GRADIENT_COLOR;
+		bottomColor = BBOT_PIANO_GRADIENT_COLOR;
+	}
 
     SDL_Texture* gradient = GenerateGradientTexture(renderer, w, h, topColor, bottomColor);
-
-	SDL_Texture* pianoTexture = IMG_LoadTexture(renderer, StrToPtr(location));
 
     SDL_Texture* blendedTexture = MaskTexture(renderer, gradient, texture);
 
@@ -92,6 +103,7 @@ std::tuple<KeyTexture, KeyTexture> PianoKeyboard::LoadKeyTex(SDL_Renderer* rende
     return std::make_tuple(KeyTexture{ pianoTexture, location, h, w }, KeyTexture{ blendedTexture , location, h, w });
 }
 
+// same as above but without the gradient applied - for the black shadow
 KeyTexture PianoKeyboard::LoadKeyTex(SDL_Texture*& texture, std::string location) {
 	
 	KeyTexture key;
@@ -111,6 +123,7 @@ KeyTexture PianoKeyboard::LoadKeyTex(SDL_Texture*& texture, std::string location
 	return key;
 }
 
+// Helper function to get the KeyTexture from a tuple based on the position (true for left, false for right)
 KeyTexture GetKey(std::tuple<KeyTexture, KeyTexture> tuple, bool pos) {
 	if (pos) { 
 		return std::get<0>(tuple); 
@@ -225,13 +238,15 @@ void PianoKeyboard::DisplayOutPorts() {
 	std::cout << '\n';
 }
 
+// Adds a note to the notesPlayed map, or updates it if it already exists
 void PianoKeyboard::RemoveNote(int key_pos) {
 	auto it = this->notesPlayed.find(key_pos);
-	if (it != this->notesPlayed.end()) {
+	if (it != this->notesPlayed.end()) { // If the note exists, remove it
 		this->notesPlayed.erase(it);
 	}
 }
 
+// Sets the pedal notes to the notes that are currently played, so that they can be removed when the pedal is released
 void PianoKeyboard::SetPedalNotes() {
 	std::map<int, Note> notes;
 	for (auto i : GetNotesPlayed()) {
@@ -240,6 +255,7 @@ void PianoKeyboard::SetPedalNotes() {
 	this->notesPlayed = notes;
 }
 
+// Removes notes that are not pressed and are not pedal notes
 void PianoKeyboard::RemovePedalNotes() {
 	for (auto i : GetNotesPlayed()) {
 		if (!i.second.pedal && !i.second.pressed) {
@@ -248,7 +264,7 @@ void PianoKeyboard::RemovePedalNotes() {
 	}
 }
 
-// fix locked keys
+// Detects keys pressed on the MIDI input and updates the notesPlayed map accordingly
 void PianoKeyboard::DetectKeys() {
 	if (GetMidiinPort() == -1){
 		DisplayInPorts();
@@ -308,6 +324,7 @@ void PianoKeyboard::DetectKeys() {
 	
 }
 
+// Returns a string representation of the chord played based on the notes in the notesPlayed map
 std::string PianoKeyboard::GetChordPlayed() {
 	std::string notes[12] = {"C","Db","D","Eb","E","F","Gb","G","Ab","A","Bb","B" };
 	int root = 120;
@@ -350,6 +367,7 @@ std::string PianoKeyboard::GetChordPlayed() {
 	
 }
 
+// Loads the piano textures with all the info needed for rendering
 bool PianoKeyboard::LoadPianoTextures(SDL_Renderer * renderer, int height) {
 	SDL_Texture* pianoTexture = NULL;
 	std::string pianoFolderPath = CAT(ASSETS_IMAGES_PATH,
@@ -361,27 +379,28 @@ bool PianoKeyboard::LoadPianoTextures(SDL_Renderer * renderer, int height) {
 	std::string location = CAT(pianoFolderPath, RWHITE_PATH);
 	pianoTexture = LoadTexture(renderer, pianoTexture, location);
 	CHECK_RESULT(pianoTexture, "Error loading piano RWhiteKey texture: ");
-	this->SetRWhiteKey(this->LoadKeyTex(renderer, pianoTexture, location));
+	this->SetRWhiteKey(this->LoadKeyTex(renderer, pianoTexture, location, true));
 
 	location = CAT(pianoFolderPath, LWHITE_PATH);
 	pianoTexture = LoadTexture(renderer, pianoTexture, location);
 	CHECK_RESULT(pianoTexture, "Error loading piano LWhiteKey texture: ");
-	this->SetLWhiteKey(this->LoadKeyTex(renderer, pianoTexture, location));
+	this->SetLWhiteKey(this->LoadKeyTex(renderer, pianoTexture, location, true));
 
 	location = CAT(pianoFolderPath, WHITE_MID_PATH);
 	pianoTexture = LoadTexture(renderer, pianoTexture, location);
 	CHECK_RESULT(pianoTexture, "Error loading piano MidWhiteKey texture: ");
-	this->SetMidWhiteKey(this->LoadKeyTex(renderer, pianoTexture, location));
+	this->SetMidWhiteKey(this->LoadKeyTex(renderer, pianoTexture, location, true));
 
 	location = CAT(pianoFolderPath, WHITE_ROUNDMID_PATH);
 	pianoTexture = LoadTexture(renderer, pianoTexture, location);
 	CHECK_RESULT(pianoTexture, "Error loading piano RoundWhiteKey texture: ");
-	this->SetRoundWhiteKey(this->LoadKeyTex(renderer, pianoTexture, location));
+	this->SetRoundWhiteKey(this->LoadKeyTex(renderer, pianoTexture, location, true));
 
 	location = CAT(pianoFolderPath, BLACK_KEY_PATH);
-	pianoTexture = LoadTexture(renderer, pianoTexture, location);
+	std::string blend_location = CAT(pianoFolderPath, BLACK_BLEND_PATH);
+	pianoTexture = LoadTexture(renderer, pianoTexture, blend_location);
 	CHECK_RESULT(pianoTexture, "Error loading piano BlackKey texture: ");
-	this->SetBlackKey(this->LoadKeyTex(renderer, pianoTexture, location));
+	this->SetBlackKey(this->LoadKeyTex(renderer, pianoTexture, location, false));
 
 	location = CAT(pianoFolderPath, BLACK_SHADOW_PATH);
 	pianoTexture = LoadTexture(renderer, pianoTexture, location);
@@ -393,6 +412,7 @@ bool PianoKeyboard::LoadPianoTextures(SDL_Renderer * renderer, int height) {
 	return true;
 }
 
+// Renders the piano keyboard on the screen based on the current state of the quantity of notes, notes played and the textures loaded
 bool PianoKeyboard::RenderPiano(SDL_Renderer* renderer, Animations* animations, bool isPiano, int widt, int heigh) {
 	if (!isPiano) return true;
 
@@ -506,6 +526,7 @@ bool PianoKeyboard::RenderPiano(SDL_Renderer* renderer, Animations* animations, 
 	return true;
 }
 
+// Renders the chord recognition text on the screen if the scene is set to detect keys
 bool PianoKeyboard::ChordsText(SDL_Renderer* renderer, Scene* scene, TTF_Font* font) {
 	if (scene->GetDetectKeys()) {
 		static SDL_FRect chord_rect;

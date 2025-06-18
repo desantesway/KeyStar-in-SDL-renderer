@@ -143,7 +143,8 @@
     <ClCompile Include="src\ChordRecognizer\chord_db.hpp" />
     <ClCompile Include="src\Engine\Animations.cpp" />
     <ClCompile Include="src\Engine\PerformanceBenchmark.cpp" />
-    <ClCompile Include="src\Engine\Scene.cpp" />
+    <ClCompile Include="src\Scenes\MainMenu.cpp" />
+    <ClCompile Include="src\Scenes\Scene.cpp" />
     <ClCompile Include="src\Engine\SDL_Engine.cpp" />
     <ClCompile Include="src\Engine\SDL_Textures.cpp" />
     <ClCompile Include="src\Engine\Settings\Window.cpp" />
@@ -157,7 +158,9 @@
     <ClInclude Include="src\Engine\Animations.h" />
     <ClInclude Include="src\Engine\Clock.h" />
     <ClInclude Include="src\Engine\PerformanceBenchmark.h" />
-    <ClInclude Include="src\Engine\Scene.h" />
+    <ClInclude Include="src\Scenes\MainMenu.h" />
+    <ClInclude Include="src\Scenes\Menus.h" />
+    <ClInclude Include="src\Scenes\Scene.h" />
     <ClInclude Include="src\Engine\SDL_Engine.h" />
     <ClInclude Include="src\Engine\SDL_Textures.h" />
     <ClInclude Include="src\Engine\Settings\Settings.h" />

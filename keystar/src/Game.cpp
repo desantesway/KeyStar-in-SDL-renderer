@@ -3,7 +3,6 @@
 * HANDLE MOVING WINDOW
 * TRANSLATE KEY VELOCITY TO ANIMATION
 * PEDAL KEYS NOT ON TEXTURES
-* SEPARAR ANIMATION TO A DIF FILE
 * PEDAL ANIMATION
 * KEY NAME ON PRESSED KEYS
 * 7. DO PIANO ANIMATION FOR MOUSE
@@ -61,10 +60,10 @@ void SDL_Run(SDL* sdl) {
     
 }
 
+// This function is the entry point of the game. It initializes the SDL engine, runs the game loop, and cleans up resources.
 int game() {
 
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-
 
     SDL* engine = new SDL();
 
@@ -77,22 +76,23 @@ int game() {
     return true;
 }
 
-#ifdef _DEBUG
-// Debug mode - keep console window
-int main(int argc, char* argv[]) {
-    (void)argc; (void)argv;  // Silence unused warnings
-
-    SDL_SetMainReady();
-
-    return game();
-}
-#else
+#ifdef NDEBUG
 // Release mode - no console window
 #include <windows.h>
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     LPSTR lpCmdLine, int nCmdShow) {
     (void)hInstance; (void)hPrevInstance;
     (void)lpCmdLine; (void)nCmdShow;
+
+    SDL_SetMainReady();
+
+    return game();
+}
+
+#else
+// Debug mode - keep console window
+int main(int argc, char* argv[]) {
+    (void)argc; (void)argv;  // Silence unused warnings
 
     SDL_SetMainReady();
 

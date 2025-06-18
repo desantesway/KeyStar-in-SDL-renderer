@@ -2,7 +2,7 @@
 #define SDL_Textures_H
 
 #include "../Utils/Libs.h"
-#include "Scene.h"
+#include "../Scenes/Scene.h"
 
 bool RenderTexture(SDL_Renderer* renderer, SDL_Texture* texture);
 bool RenderTexture(SDL_Renderer* renderer, SDL_Texture* texture, SDL_FRect* rect1, SDL_FRect* rect2);
@@ -17,5 +17,8 @@ SDL_Texture* LoadTexture(SDL_Renderer* renderer, SDL_Texture*& texture, std::str
 void FreeTexture(SDL_Texture*& texture);
 
 bool LoadTextures(SDL_Renderer* renderer, Scene* scene);
+
+bool StartScene(SDL_Renderer* renderer, Scene* scene);
+bool RenderScene(SDL_Renderer* renderer, Scene* scene);
 
 #endif
