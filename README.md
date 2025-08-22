@@ -19,5 +19,5 @@ Having that said, this build won’t have more support (developing in OpenGL now
 ---
 
 ## ⚠️ Notes
-- This SDL version is **deprecated**.  
+- This version is **deprecated**.  
 - For continued development, check out the **OpenGL renderer build** linked above.
