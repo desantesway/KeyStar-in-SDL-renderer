@@ -8,6 +8,7 @@ Having that said, this build won’t have more support (developing in OpenGL now
 
 ## 🎥 Preview
 
+![2025-08-22 10-08-48 (online-video-cutter com)(1)](https://github.com/user-attachments/assets/d0e54074-05d6-46b2-a048-a2b001485f9b)
 
 ---
 
